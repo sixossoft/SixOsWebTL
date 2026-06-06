@@ -1,0 +1,27 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — SixOs Training</title>
+    <link href="~/dist/css/LoginPage.css" rel="stylesheet" asp-append-version="true" />
+</head>
+<body>
+    <div class="auth-wrap">
+        @RenderBody()
+    </div>
+    <script>
+        function togglePassword(btn) {
+            const input = btn.closest('.input-wrap').querySelector('input');
+            const isText = input.type === 'text';
+            input.type = isText ? 'password' : 'text';
+            btn.querySelector('.eye-off').style.display = isText ? 'none' : 'block';
+            btn.querySelector('.eye-on').style.display  = isText ? 'block' : 'none';
+        }
+        function handleSubmit(form, btn) {
+            btn.classList.add('loading');
+            return true;
+        }
+    </script>
+</body>
+</html>

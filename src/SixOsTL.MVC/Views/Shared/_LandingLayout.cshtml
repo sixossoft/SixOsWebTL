@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Hệ thống đào tạo SixOs</title>
+    <link href="~/dist/css/LandingPage.css" rel="stylesheet" asp-append-version="true" />
+</head>
+<body>
+
+    <!-- NAV -->
+    <nav class="nav" id="mainNav">
+        <a class="nav-brand" href="/">
+            <img src="/static/logo12.svg" alt="SixOs Training" class="nav-logo-img" />
+        </a>
+        <div class="nav-links">
+            <a href="#tieu-chi">Tiêu chí</a>
+            <a href="#cach-dung">Cách dùng</a>
+            <a href="#tinh-nang">Tính năng</a>
+            <a class="btn-login" href="/Account/Login" style="color: white;">Đăng nhập</a>
+        </div>
+    </nav>
+
+    @RenderBody()
+
+    <!-- FOOTER -->
+    <footer>
+        <p>
+            &copy; @DateTime.Now.Year SixOsSoft — Công ty TNHH phần mềm Vũ Phong &nbsp;|&nbsp;
+            <a href="#">Chính sách bảo mật</a> &nbsp;|&nbsp;
+            <a href="#">Liên hệ</a>
+        </p>
+    </footer>
+
+
+    <script>
+        const nav = document.getElementById('mainNav');
+        window.addEventListener('scroll', () => {
+            nav.classList.toggle('scrolled', window.scrollY > 20);
+        });
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.12,
+            rootMargin: '0px 0px -48px 0px'
+        });
+        document.querySelectorAll('[data-reveal]').forEach(el => {
+            revealObserver.observe(el);
+        });
+        const staggerObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    staggerObserver.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.08,
+            rootMargin: '0px 0px -32px 0px'
+        });
+        document.querySelectorAll('[data-stagger], [data-row-stagger]').forEach(el => {
+            staggerObserver.observe(el);
+        });
+    </script>
+    @RenderSection("Scripts", required: false);
+</body>
+</html>

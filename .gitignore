@@ -1,0 +1,69 @@
+# ── BUILD OUTPUT ─────────────────────────────────────────────
+bin/
+obj/
+out/
+publish/
+
+# ── VISUAL STUDIO ────────────────────────────────────────────
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+# ── RIDER / JETBRAINS ────────────────────────────────────────
+.idea/
+*.DotSettings.user
+
+# ── VSCODE ───────────────────────────────────────────────────
+.vscode/
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# ── DOTNET ───────────────────────────────────────────────────
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+lcov.info
+
+# ── SECRETS & CONFIG ───────────────────────────────
+appsettings.Production.json
+appsettings.Staging.json
+secrets.json
+
+# User Secrets (dotnet user-secrets)
+**/Properties/launchSettings.json
+
+# ── MVC WWWROOT BUILD ────────────────────────────────────────
+# wwwroot/dist/
+
+# ── VIDEO CACHE (TaiLieuController cache local) ──────────────
+**/sixos_video_cache/
+
+# ── DATABASE ─────────────────────────────────────────────────
+*.mdf
+*.ldf
+*.ndf
+
+# ── LOG ──────────────────────────────────────────────────────
+logs/
+*.log
+nlog.config.bak
+
+# ── OS ───────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── NODE (FOR NODEJS BUILDER) ─────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-error.log*

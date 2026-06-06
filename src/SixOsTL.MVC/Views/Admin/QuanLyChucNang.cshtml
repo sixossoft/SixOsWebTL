@@ -1,0 +1,126 @@
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@using SixOsTL.Application.DTOs.DanhMuc
+@model IEnumerable<ChucNangDto>
+@{
+    ViewData["Title"] = "Quản lý Chức năng";
+    ViewData["ActiveMenu"] = "chucnang";
+    Layout = "~/Views/Shared/_AppLayout.cshtml";
+}
+@section Styles {
+    <link href="~/dist/css/admin/quanly/QuanLyChucNang.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="app-main">
+    <div class="app-main-body">
+
+        <div class="page-header">
+            <div>
+                <div class="page-title"><i class="ti ti-folder" style="color:var(--c-primary);margin-right:6px;"></i>Quản lý Chức năng</div>
+                <div class="page-sub">Thêm, sửa, xóa chức năng phần mềm theo từng sản phẩm</div>
+            </div>
+            <button class="btn-primary" onclick="openModal('createModal')">
+                <i class="ti ti-plus"></i> Thêm Chức năng
+            </button>
+        </div>
+
+        @* Modal tạo mới *@
+        <div class="modal-overlay" id="createModal">
+            <div class="modal">
+                <div class="modal-head">
+                    <span class="modal-title" id="cnModalTitle">Thêm Chức năng mới</span>
+                    <button class="btn-cancel" onclick="closeModal('createModal')" style="padding:4px 8px;"><i class="ti ti-x"></i></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="/Admin/TaoChucNang">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="cnId" name="id" value="0" />
+                        <div class="form-group">
+                            <label class="form-label">Sản phẩm *</label>
+                            <select name="idSanPham" class="form-ctrl ts-basic" required>
+                                <option value="" disabled selected>-- Chọn sản phẩm --</option>
+                                @foreach (var sp in (ViewBag.SanPhams as IEnumerable<dynamic> ?? []))
+                                {
+                                    <option value="@sp.Id">@sp.TenSP</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tên chức năng *</label>
+                            <input name="chucNang" class="form-ctrl full" placeholder="VD: Tiếp nhận bệnh nhân" required />
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Mức độ ưu tiên</label>
+                                <select name="idMucDoUuTien" class="form-ctrl ts-basic">
+                                    <option value="">-- Không chọn --</option>
+                                    @foreach (var m in (ViewBag.MucDos as IEnumerable<dynamic> ?? []))
+                                    {
+                                        <option value="@m.Id">@m.MucDo</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Đường dẫn file</label>
+                                <input name="duongDanFile" class="form-ctrl" placeholder="/docs/chucnang" />
+                            </div>
+                        </div>
+                        <div class="modal-foot" style="padding:0;border:none;margin-top:4px;">
+                            <button type="button" class="btn-cancel" onclick="closeModal('createModal')">Hủy</button>
+                            <button type="button" id="btnSaveCn" class="btn-primary" onclick="submitChucNang()"><i class="ti ti-check"></i> Lưu</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        @* Table *@
+        <div class="card card-responsive">
+            <div class="card-head">
+                <div class="card-title"><i class="ti ti-list"></i> Danh sách Chức năng (@Model.Count())</div>
+            </div>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Chức năng</th>
+                        <th>Sản phẩm</th>
+                        <th>Mức độ</th>
+                        <th style="width:100px">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cn in Model.OrderBy(c => c.TenSanPham).ThenBy(c => c.ChucNang))
+                    {
+                        <tr>
+                            <td style="font-weight:500;color:var(--c-navy);white-space: nowrap;">@cn.ChucNang</td>
+                            <td><span class="badge-sp">@cn.TenSanPham</span></td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(cn.MucDo))
+                                {
+                                    <span class="badge-mucdo">@cn.MucDo</span>
+                                }
+                            </td>
+                            <td>
+                                <div style="display:flex;gap:5px;">
+                                    @{
+                                        var _token = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+                                    }
+                                    <button class="btn-warn btn-sm" onclick="openEditCn(@cn.Id)">
+                                        <i class="ti ti-edit"></i>
+                                    </button>
+                                    <button class="btn-primary btn-sm btn-danger"
+                                            onclick="xoaChucNang(@cn.Id, '@Html.Raw(cn.ChucNang?.Replace("'", "\'"))', '@_token')">
+                                        <i class="ti ti-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/dist/js/admin/quanly/QuanLyChucNang.js" asp-append-version="true"></script>
+}

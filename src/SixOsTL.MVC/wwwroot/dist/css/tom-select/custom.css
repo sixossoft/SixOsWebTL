@@ -1,0 +1,83 @@
+﻿.ts-wrapper {
+    width: 100%;
+}
+
+    .ts-wrapper.form-ctrl {
+        padding: 0;
+    }
+
+    .ts-wrapper .ts-control {
+        min-height: 38px;
+        padding: 0 10px;
+        border: 1.5px solid var(--c-border);
+        border-radius: var(--radius-sm);
+        font-family: var(--font-body);
+        font-size: .85rem;
+        color: var(--c-text);
+        background: #fff;
+        box-shadow: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .ts-wrapper.focus .ts-control {
+        border-color: var(--c-cyan);
+        box-shadow: 0 0 0 3px rgba(8,145,178,.1);
+        outline: none;
+    }
+
+    .ts-wrapper .ts-dropdown {
+        border: 1.5px solid var(--c-border);
+        border-radius: var(--radius-sm);
+        box-shadow: 0 4px 16px rgba(0,0,0,.08);
+        font-family: var(--font-body);
+        font-size: .85rem;
+        margin-top: 2px;
+    }
+
+        .ts-wrapper .ts-dropdown .option {
+            padding: 8px 12px;
+            color: var(--c-text);
+        }
+
+            .ts-wrapper .ts-dropdown .option.active {
+                background: var(--c-powder);
+                color: var(--c-navy);
+            }
+
+            .ts-wrapper .ts-dropdown .option:hover {
+                background: var(--c-ice);
+            }
+
+    .ts-wrapper .ts-dropdown-content {
+        max-height: 220px;
+    }
+
+.ts-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.ts-item-name {
+    flex: 1;
+    min-width: 0;
+    color: var(--c-text);
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.ts-item-ma {
+    font-size: .75rem;
+    color: var(--c-steel);
+    font-family: monospace;
+    background: var(--c-ice);
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+}

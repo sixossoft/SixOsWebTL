@@ -1,0 +1,178 @@
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@using SixOsTL.Application.DTOs.TaiKhoan
+@model IEnumerable<TaiKhoanDto>
+@{
+    ViewData["Title"] = "Quản lý Tài khoản";
+    ViewData["ActiveMenu"] = "user";
+    Layout = "~/Views/Shared/_AppLayout.cshtml";
+}
+@section Styles {
+    <link href="~/dist/css/admin/quanly/QuanLyUser.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="app-main">
+    <div class="app-main-body">
+
+        <div class="page-header">
+            <div>
+                <div class="page-title"><i class="ti ti-users" style="color:var(--c-success);margin-right:6px;"></i>Quản lý Tài khoản</div>
+                <div class="page-sub">Tạo và quản lý tài khoản người dùng theo cơ sở khám chữa bệnh</div>
+            </div>
+            <button class="btn-primary" onclick="openModal('createModal')">
+                <i class="ti ti-user-plus"></i> Thêm tài khoản
+            </button>
+        </div>
+
+        @* Modal tạo tài khoản *@
+        <div class="modal-overlay" id="createModal">
+            <div class="modal">
+                <div class="modal-head">
+                    <span class="modal-title" id="userModalTitle">Tạo tài khoản mới</span>
+                    <button class="btn-cancel" onclick="closeModal('createModal')" style="padding:4px 8px;"><i class="ti ti-x"></i></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="/Admin/TaoTaiKhoan">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="userId" name="id" value="0" />
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Mã cơ sở (MaCSKCB) *</label>
+                                <input name="maCSKCB" class="form-ctrl" placeholder="VD: 74001" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Vai trò *</label>
+                                <select name="maVaiTros" class="form-ctrl ts-basic" required>
+                                    <option value="USER">Người dùng (User)</option>
+                                    <option value="ADMIN">Quản trị (Admin)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Họ tên</label>
+                                <input name="hoTen" class="form-ctrl" placeholder="Nguyễn Văn A" />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Tên đăng nhập *</label>
+                                <input name="tenTK" class="form-ctrl" placeholder="nva123" required />
+                            </div>
+                        </div>
+                        <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
+                            <div class="form-group">
+                                <label class="form-label">Mật khẩu *</label>
+                                <input id="inputMatKhau" name="matKhau" class="form-ctrl" placeholder="••••••••" required />
+                                <span id="matKhauHint" style="display:none;font-size:.75rem;color:var(--c-steel)">Để trống nếu không đổi mật khẩu</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Số điện thoại</label>
+                                <input name="soDienThoai" class="form-ctrl" placeholder="0901234567" />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input name="email" type="email" class="form-ctrl" placeholder="example@email.com" />
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Ngày bắt đầu</label>
+                                <input name="ngayBatDau" type="text" class="form-ctrl input-date" />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Ngày kết thúc</label>
+                                <input name="ngayKetThuc" type="text" class="form-ctrl input-date" />
+                            </div>
+                        </div>
+                        <div class="modal-foot" style="padding:0;border:none;margin-top:4px;">
+                            <button type="button" class="btn-cancel" onclick="closeModal('createModal')">Hủy</button>
+                            <button type="button" id="btnSaveUser" class="btn-primary"
+                                    onclick="submitUser()">
+                                <i class="ti ti-check"></i> <span id="btnSaveUserText">Tạo tài khoản</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-responsive">
+            <div class="card-head">
+                <div class="card-title"><i class="ti ti-list"></i> Danh sách (@Model.Count())</div>
+                <div class="search-bar-wrap">
+                    <i class="ti ti-search"></i>
+                    <input type="text" placeholder="Tìm tài khoản..." oninput="filterTable(this,'userTable')" />
+                </div>
+            </div>
+            <table class="admin-table" id="userTable">
+                <thead>
+                    <tr>
+                        <th>Tài khoản</th>
+                        <th>Mã CSKB</th>
+                        <th>Liên hệ</th>
+                        <th>Vai trò</th>
+                        <th>Hiệu lực</th>
+                        <th style="width:90px">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var u in Model)
+                    {
+                        var now = DateTime.Now;
+                        var active = (!u.NgayBatDau.HasValue || u.NgayBatDau <= now)
+                        && (!u.NgayKetThuc.HasValue || u.NgayKetThuc >= now);
+                        <tr>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:9px;">
+                                    <div class="avatar-sm">
+                                        <i class="ti ti-user" style="color:var(--c-primary);font-size:14px;"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight:500;color:var(--c-navy);">@(u.HoTen ?? u.TenTK)</div>
+                                        <div style="font-size:.72rem;color:var(--c-steel);">@@u.TenTK</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span style="font-family:monospace;font-size:.8rem;">@u.MaCSKCB</span></td>
+                            <td>
+                                <div style="font-size:.78rem;color:var(--c-text);">@u.SoDienThoai</div>
+                                <div style="font-size:.72rem;color:var(--c-steel);">@u.Email</div>
+                            </td>
+                            <td>
+                                @foreach (var r in u.Roles)
+                                {
+                                    <span class="badge-role @(r == "ADMIN" ? "badge-admin" : "badge-user")" style="margin-right:3px;">@r</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="@(active ? "badge-active" : "badge-expired")">
+                                    @(active ? "Còn hiệu lực" : "Hết hạn")
+                                </span>
+                                @if (u.NgayKetThuc.HasValue)
+                                {
+                                    <div style="font-size:.7rem;color:var(--c-steel);margin-top:2px;">HH: @u.NgayKetThuc.Value.ToString("dd/MM/yyyy")</div>
+                                }
+                            </td>
+                            <td>
+                                <div style="display:flex;gap:5px;">
+                                    <button class="btn-warn btn-sm" onclick="openEditUser(@u.Id)">
+                                        <i class="ti ti-edit"></i>
+                                    </button>
+                                    @{
+                                        var _token = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+                                    }
+                                    <button class="btn-primary btn-sm btn-danger"
+                                            onclick="xoaTaiKhoan(@u.Id, '@u.TenTK', '@_token')">
+                                        <i class="ti ti-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/dist/js/admin/quanly/QuanLyUser.js" asp-append-version="true"></script>
+}

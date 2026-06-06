@@ -1,0 +1,153 @@
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@using SixOsTL.Application.DTOs.TaiLieu
+@model IEnumerable<HoiDapDto>
+@{
+    ViewData["Title"] = "Quản lý Hỏi đáp";
+    ViewData["ActiveMenu"] = "hoidap";
+    Layout = "~/Views/Shared/_AppLayout.cshtml";
+    var highlightId = ViewBag.HighlightId as long?;
+}
+@section Styles {
+    <link href="~/dist/css/admin/quanly/QuanLyHoiDap.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="app-main">
+    <div class="app-main-body">
+
+        <div class="page-header">
+            <div>
+                <div class="page-title"><i class="ti ti-messages" style="color:var(--c-warn);margin-right:6px;"></i>Quản lý Hỏi đáp</div>
+                <div class="page-sub">Phản hồi câu hỏi từ người dùng, ẩn/hiện nội dung không phù hợp</div>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterHoiDap('all',this)">
+                Tất cả (@Model.Count())
+            </button>
+            <button class="filter-btn" onclick="filterHoiDap('pending',this)">
+                <i class="ti ti-clock" style="font-size:12px;"></i>
+                Chờ phản hồi (@Model.Count(h => !h.TraLois.Any()))
+            </button>
+            <button class="filter-btn" onclick="filterHoiDap('answered',this)">
+                <i class="ti ti-check" style="font-size:12px;"></i>
+                Đã trả lời (@Model.Count(h => h.TraLois.Any()))
+            </button>
+            <div class="search-bar-wrap">
+                <i class="ti ti-search"></i>
+                <input type="text" placeholder="Tìm nội dung..." oninput="searchHoiDap(this.value)" />
+            </div>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="empty-state">
+                <i class="ti ti-messages"></i>
+                <div>Chưa có câu hỏi nào.</div>
+            </div>
+        }
+        else
+        {
+            <div class="hoidap-list" id="hoiDapList">
+                @foreach (var hd in Model.OrderByDescending(h => h.NgayTao))
+                {
+                    var hasReply = hd.TraLois.Any();
+                    var isHighlight = highlightId == hd.Id;
+                    <div class="hoidap-card @(hasReply ? "answered" : "pending") @(isHighlight ? "highlight" : "")"
+                         data-status="@(hasReply ? "answered" : "pending")"
+                         data-content="@hd.NoiDung?.ToLower()"
+                         id="hd-@hd.Id">
+                        <div class="hd-head">
+                            <div class="hd-avatar"><i class="ti ti-user"></i></div>
+                            <div class="hd-meta">
+                                <div class="hd-user">@(hd.TenNguoiHoi ?? "Người dùng")</div>
+                                <div class="hd-info">
+                                    <span class="hd-time">@hd.NgayTao.ToString("dd/MM/yyyy HH:mm")</span>
+                                    <span class="hd-cn">CN #@hd.IDChucNang</span>
+                                    @if (!hd.CongKhai)
+                                    {
+                                        <span class="badge-private"><i class="ti ti-lock" style="font-size:10px;"></i> Riêng tư</span>
+                                    }
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+                                @if (hasReply)
+                                {
+                                    <span class="badge-answered"><i class="ti ti-check" style="font-size:10px;"></i> Đã trả lời</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-pending"><i class="ti ti-clock" style="font-size:10px;"></i> Chờ phản hồi</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="hd-body">
+                            <div class="hd-content">@hd.NoiDung</div>
+
+                            @* Hiện các câu trả lời đã có *@
+                            @foreach (var reply in hd.TraLois)
+                            {
+                                <div class="reply-item">
+                                    <div class="rep-meta">
+                                        <span class="rep-badge"><i class="ti ti-shield-check" style="font-size:10px;"></i> Admin</span>
+                                        <span class="rep-time">@reply.NgayTao.ToString("dd/MM/yyyy HH:mm")</span>
+                                    </div>
+                                    <div class="rep-content">@reply.NoiDung</div>
+                                </div>
+                            }
+
+                            @* Reply box *@
+                            <div class="reply-box" id="replyBox-@hd.Id">
+                                <form method="post" action="/Admin/TraLoiHoiDap">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="parentId" value="@hd.Id" />
+                                    <input type="hidden" name="idChucNang" value="@hd.IDChucNang" />
+                                    <textarea name="noiDung" class="reply-input"
+                                      placeholder="Nhập câu trả lời..." required></textarea>
+                                    <div class="reply-actions">
+                                        <button type="button" class="btn-cancel"
+                                                onclick="toggleReply(@hd.Id)">
+                                            Hủy
+                                        </button>
+                                        <button type="submit" class="btn-primary btn-sm">
+                                            <i class="ti ti-send"></i> Gửi trả lời
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="hd-actions">
+                                <button class="btn-primary btn-sm btn-success" onclick="toggleReply(@hd.Id)">
+                                    <i class="ti ti-arrow-forward-up"></i>
+                                    @(hasReply ? "Trả lời thêm" : "Trả lời")
+                                </button>
+                                @{
+                                    var _token = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+                                }
+                                <button class="btn-primary btn-sm btn-danger"
+                                        onclick="anHoiDap(@hd.Id, @hd.IDChucNang, '@_token')">
+                                    <i class="ti ti-eye-off"></i> Ẩn
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/dist/js/admin/quanly/QuanLyHoiDap.js" asp-append-version="true"></script>
+    @if (highlightId.HasValue)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const el = document.getElementById('hd-@highlightId');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        </script>
+    }
+}

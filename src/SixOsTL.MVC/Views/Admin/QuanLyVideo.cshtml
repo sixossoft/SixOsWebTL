@@ -1,0 +1,206 @@
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@using SixOsTL.Application.DTOs.DanhMuc
+@using SixOsTL.Application.DTOs.TaiLieu
+@model IEnumerable<VideoDto>
+@{
+    ViewData["Title"] = "Quản lý Video";
+    ViewData["ActiveMenu"] = "video";
+    Layout = "~/Views/Shared/_AppLayout.cshtml";
+}
+
+@section Styles {
+    <link href="~/dist/css/admin/quanly/QuanLyVideo.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="app-main">
+    <div class="app-main-body">
+
+        <div class="page-header">
+            <div>
+                <div class="page-title"><i class="ti ti-player-play" style="color:var(--c-cyan);margin-right:6px;"></i>Quản lý Video</div>
+                <div class="page-sub">Upload và quản lý video hướng dẫn theo chức năng</div>
+            </div>
+            <button class="btn-primary" onclick="openUploadModal()">
+                <i class="ti ti-plus"></i> Upload Video mới
+            </button>
+        </div>
+
+        @* UPLOAD FORM trong Modal *@
+        <div class="modal-overlay" id="uploadModal">
+            <div class="modal">
+                <div class="modal-head">
+                    <span class="modal-title">Upload Video mới</span>
+                    <button class="btn-cancel" onclick="closeModal('uploadModal')" style="padding:4px 8px;"><i class="ti ti-x"></i></button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadVideoForm" method="post" action="/Admin/UploadVideo" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div class="form-row" style="grid-template-columns: 2fr 1fr;">
+                            <div class="form-group">
+                                <label class="form-label">Chức năng *</label>
+                                <select name="idChucNang" class="form-ctrl ts-chucnang" required>
+                                    <option value="" disabled selected>-- Chọn chức năng --</option>
+                                    @foreach (var cn in (ViewBag.ChucNangs as IEnumerable<ChucNangDto> ?? []))
+                                    {
+                                        <option value="@cn.Id" data-ma="@cn.TenSanPham">@cn.TenSanPham — @cn.ChucNang</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">STT</label>
+                                <input name="stt" class="form-ctrl" placeholder="VD: 1.1" />
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom:12px;">
+                            <label class="form-label">Tên video *</label>
+                            <input name="tenVideo" class="form-ctrl full" placeholder="VD: Hướng dẫn tiếp nhận bệnh nhân mới" required />
+                        </div>
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label class="form-label">Từ khóa tìm kiếm</label>
+                            <input name="keyword" class="form-ctrl full" placeholder="VD: tiếp nhận, bệnh nhân, đăng ký" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">File video *</label>
+                            <div class="file-drop" id="videoDropZone" onclick="document.getElementById('videoFile').click()">
+                                <i class="ti ti-cloud-upload"></i>
+                                <p id="videoFileName">Kéo thả file vào đây hoặc click để chọn</p>
+                                <div class="hint">MP4, WebM — tối đa 500MB</div>
+                            </div>
+                            <input type="file" id="videoFile" name="file" accept="video/*" style="display:none"
+                                   onchange="onFileSelected(this,'videoFileName','videoDropZone')" required />
+                            <div class="progress-wrap" id="videoProgress">
+                                <div class="progress-bar"><div class="progress-fill" id="videoProgressFill"></div></div>
+                                <div class="progress-label" id="videoProgressLabel">Đang upload...</div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-foot">
+                    <button class="btn-cancel" onclick="closeModal('uploadModal')">Hủy</button>
+                    <button id="btnUploadVideo" class="btn-primary"
+                            onclick="submitUpload('uploadVideoForm','videoProgress','videoProgressFill','videoProgressLabel','btnUploadVideo')">
+                        <i class="ti ti-upload"></i> Upload
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        @* TABLE *@
+        <div class="card card-responsive">
+            <div class="card-head">
+                <div class="card-title"><i class="ti ti-list"></i> Danh sách Video (@Model.Count())</div>
+                <div class="search-bar">
+                    <div class="search-bar-wrap">
+                        <i class="ti ti-search"></i>
+                        <input type="text" placeholder="Tìm video..." oninput="filterTable(this,'videoTable')" />
+                    </div>
+                </div>
+            </div>
+            @if (!Model.Any())
+            {
+                <div class="empty-state">
+                    <i class="ti ti-video-off"></i>
+                    <div>Chưa có video nào. Nhấn "Upload Video mới" để bắt đầu.</div>
+                </div>
+            }
+            else
+            {
+                <table class="admin-table" id="videoTable">
+                    <thead>
+                        <tr>
+                            <th style="width:50px">STT</th>
+                            <th>Tên video</th>
+                            <th>Chức năng</th>
+                            <th>Từ khóa</th>
+                            <th style="width:110px">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var v in Model)
+                        {
+                            <tr>
+                                <td style="color:var(--c-steel)">@v.STT</td>
+                                <td>
+                                    <div style="font-weight:500;color:var(--c-navy);">@v.TenVideo</div>
+                                    <div style="font-size:.72rem;color:var(--c-steel);margin-top:2px;font-family:monospace;">@v.DuongDanFileVideo</div>
+                                </td>
+                                <td><span class="badge-cn">@v.TenChucNang</span></td>
+                                <td style="color:var(--c-steel);font-size:.78rem;">@v.Keyword</td>
+                                <td>
+                                    <div style="display:flex;gap:5px;">
+                                        @{
+                                            var _token = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+                                        }
+                                        <button class="btn-primary btn-sm btn-warn"
+                                                title="Quản lý video liên quan"
+                                                onclick="openLienQuanModal(@v.Id, '@Html.Raw(v.TenVideo?.Replace("'", "\'"))', '@_token')">
+                                            <i class="ti ti-link"></i>
+                                        </button>
+                                        <button class="btn-primary btn-sm btn-danger"
+                                                onclick="xoaVideo(@v.Id, @v.IDChucNang, '@v.DuongDanFileVideo', '@Html.Raw(v.TenVideo?.Replace("'", "\'"))', '@_token')">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
+    </div>
+</div>
+
+
+@* MODAL QUẢN LÝ VIDEO LIÊN QUAN *@
+<div class="modal-overlay" id="lienQuanModal">
+    <div class="modal" style="max-width:780px;">
+        <div class="modal-head">
+            <span class="modal-title"><i class="ti ti-link" style="color:var(--c-cyan);margin-right:6px;"></i>Video liên quan — <span id="lqVideoName" style="font-weight:400;color:var(--c-steel);"></span></span>
+            <button class="btn-cancel" onclick="closeModal('lienQuanModal')" style="padding:4px 8px;"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;min-height:340px;">
+
+            @* CỘT TRÁI: Danh sách hiện tại *@
+            <div>
+                <div style="font-size:.78rem;font-weight:600;color:var(--c-navy);margin-bottom:8px;display:flex;align-items:center;gap:5px;">
+                    <i class="ti ti-list-check" style="color:var(--c-cyan);"></i> Đang liên kết
+                    <span id="lqCurrentCount" style="background:var(--c-powder);color:var(--c-primary);font-size:.68rem;padding:1px 7px;border-radius:100px;margin-left:2px;"></span>
+                </div>
+                <div id="lqCurrentList" style="display:flex;flex-direction:column;gap:6px;max-height:360px;overflow-y:auto;scrollbar-width:thin;">
+                    <div class="lq-empty" style="text-align:center;padding:2rem;color:var(--c-steel);font-size:.83rem;">
+                        <i class="ti ti-unlink" style="display:block;font-size:28px;opacity:.3;margin-bottom:.5rem;"></i>
+                        Chưa có video liên quan
+                    </div>
+                </div>
+            </div>
+
+            @* CỘT PHẢI: Tìm & thêm *@
+            <div>
+                <div style="font-size:.78rem;font-weight:600;color:var(--c-navy);margin-bottom:8px;display:flex;align-items:center;gap:5px;">
+                    <i class="ti ti-search" style="color:var(--c-cyan);"></i> Thêm video
+                </div>
+                <div class="search-bar-wrap" style="margin-bottom:8px;">
+                    <i class="ti ti-search"></i>
+                    <input type="text" id="lqSearchInput" class="form-ctrl full"
+                           style="padding-left:30px;height:34px;font-size:.83rem;"
+                           placeholder="Tìm tên video..." oninput="lqSearch(this.value)" />
+                </div>
+                <div id="lqSearchResults" style="display:flex;flex-direction:column;gap:5px;max-height:340px;overflow-y:auto;scrollbar-width:thin;">
+                    <div style="text-align:center;padding:1.5rem;color:var(--c-steel);font-size:.8rem;">
+                        <i class="ti ti-keyboard" style="display:block;font-size:22px;opacity:.3;margin-bottom:.4rem;"></i>
+                        Nhập tên để tìm video
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-foot" style="justify-content:flex-end;">
+            <button class="btn-cancel" onclick="closeModal('lienQuanModal')">Đóng</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/dist/js/admin/quanly/QuanLyVideo.js" asp-append-version="true"></script>
+}

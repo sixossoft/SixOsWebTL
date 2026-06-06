@@ -1,0 +1,65 @@
+﻿<div class="modal-overlay alert-overlay" id="modal-danger" role="dialog" aria-modal="true">
+    <div class="modal modal-alert">
+        <div class="modal-status modal-status-danger"></div>
+        <div class="modal-body">
+            <div class="modal-alert-icon icon-danger">
+                <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+            </div>
+            <p class="modal-alert-title">Cảnh báo</p>
+            <p class="modal-alert-sub" id="modal-danger-content"></p>
+        </div>
+        <div class="modal-foot">
+            <button class="btn-cancel" onclick="closeModal('modal-danger')">Hủy</button>
+            <button class="btn-primary btn-danger-solid" id="btnDanger">Xác nhận</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay alert-overlay" id="modal-warning" role="dialog" aria-modal="true">
+    <div class="modal modal-alert">
+        <div class="modal-status modal-status-warn"></div>
+        <div class="modal-body">
+            <div class="modal-alert-icon icon-warn">
+                <i class="ti ti-alert-octagon" aria-hidden="true"></i>
+            </div>
+            <p class="modal-alert-title">Chú ý!</p>
+            <p class="modal-alert-sub" id="modal-warning-content"></p>
+        </div>
+        <div class="modal-foot" style="justify-content:center">
+            <button class="btn-primary" onclick="closeModal('modal-warning')">OK</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay alert-overlay" id="modal-warningYN" role="dialog" aria-modal="true">
+    <div class="modal modal-alert">
+        <div class="modal-status modal-status-warn"></div>
+        <div class="modal-body">
+            <div class="modal-alert-icon icon-warn">
+                <i class="ti ti-help-circle" aria-hidden="true"></i>
+            </div>
+            <p class="modal-alert-title">Xác nhận</p>
+            <p class="modal-alert-sub" id="modal-warningYN-content"></p>
+        </div>
+        <div class="modal-foot">
+            <button class="btn-cancel" onclick="closeModal('modal-warningYN')">Không</button>
+            <button class="btn-primary" id="btnWarningYN">Đồng ý</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay alert-overlay" id="modal-success" role="dialog" aria-modal="true">
+    <div class="modal modal-alert">
+        <div class="modal-status modal-status-success"></div>
+        <div class="modal-body">
+            <div class="modal-alert-icon icon-success">
+                <i class="ti ti-circle-check" aria-hidden="true"></i>
+            </div>
+            <p class="modal-alert-title">Thông báo</p>
+            <p class="modal-alert-sub" id="modal-success-content"></p>
+        </div>
+        <div class="modal-foot" style="justify-content:center">
+            <button class="btn-primary" onclick="closeModal('modal-success')">OK</button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,163 @@
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@using SixOsTL.Application.DTOs.DanhMuc
+@using SixOsTL.Application.DTOs.TaiLieu
+@model IEnumerable<FileDto>
+@{
+    ViewData["Title"] = "Quản lý Tài liệu";
+    ViewData["ActiveMenu"] = "file";
+    Layout = "~/Views/Shared/_AppLayout.cshtml";
+}
+
+@section Styles {
+    <link href="~/dist/css/admin/quanly/QuanLyFile.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="app-main">
+    <div class="app-main-body">
+
+        <div class="page-header">
+            <div>
+                <div class="page-title"><i class="ti ti-files" style="color:#DC2626;margin-right:6px;"></i>Quản lý Tài liệu</div>
+                <div class="page-sub">Upload và quản lý file PDF, Word theo chức năng</div>
+            </div>
+            <button class="btn-primary" onclick="openUploadModal()">
+                <i class="ti ti-plus"></i> Upload Tài liệu mới
+            </button>
+        </div>
+
+        <div class="modal-overlay" id="uploadModal">
+            <div class="modal">
+                <div class="modal-head">
+                    <span class="modal-title">Upload Tài liệu mới</span>
+                    <button class="btn-cancel" onclick="closeModal('uploadModal')" style="padding:4px 8px;"><i class="ti ti-x"></i></button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadFileForm" method="post" action="/Admin/UploadFile" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div class="form-row" style="grid-template-columns: 2fr 1fr;">
+                            <div class="form-group">
+                                <label class="form-label">Chức năng *</label>
+                                <select name="idChucNang" class="form-ctrl ts-chucnang" required>
+                                    <option value="" disabled selected>-- Chọn chức năng --</option>
+                                    @foreach (var cn in (ViewBag.ChucNangs as IEnumerable<ChucNangDto> ?? []))
+                                    {
+                                        <option value="@cn.Id" data-ma="@cn.TenSanPham">@cn.TenSanPham — @cn.ChucNang</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">STT</label>
+                                <input name="stt" class="form-ctrl" placeholder="VD: 1.1" />
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom:12px;">
+                            <label class="form-label">Tên tài liệu *</label>
+                            <input name="tenFile" class="form-ctrl full" placeholder="VD: Quy trình tiếp nhận bệnh nhân" required />
+                        </div>
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label class="form-label">Từ khóa tìm kiếm</label>
+                            <input name="keyword" class="form-ctrl full" placeholder="VD: quy trình, tiếp nhận" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">File tài liệu *</label>
+                            <div class="file-drop" id="fileDropZone" onclick="document.getElementById('docFile').click()">
+                                <i class="ti ti-file-upload"></i>
+                                <p id="docFileName">Kéo thả file vào đây hoặc click để chọn</p>
+                                <div class="hint">PDF, DOC, DOCX — tối đa 50MB</div>
+                            </div>
+                            <input type="file" id="docFile" name="file"
+                                   accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                   style="display:none"
+                                   onchange="onFileSelected(this,'docFileName','fileDropZone')" required />
+                            <div class="progress-wrap" id="fileProgress">
+                                <div class="progress-bar"><div class="progress-fill" id="fileProgressFill"></div></div>
+                                <div class="progress-label" id="fileProgressLabel">Đang upload...</div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-foot">
+                    <button class="btn-cancel" onclick="closeModal('uploadModal')">Hủy</button>
+                    <button id="btnUploadFile" class="btn-primary"
+                            onclick="submitUpload('uploadFileForm','fileProgress','fileProgressFill','fileProgressLabel','btnUploadFile')">
+                        <i class="ti ti-upload"></i> Upload
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-responsive">
+            <div class="card-head">
+                <div class="card-title"><i class="ti ti-list"></i> Danh sách Tài liệu (@Model.Count())</div>
+                <div class="search-bar">
+                    <div class="search-bar-wrap">
+                        <i class="ti ti-search"></i>
+                        <input type="text" placeholder="Tìm tài liệu..." oninput="filterTable(this,'fileTable')" />
+                    </div>
+                </div>
+            </div>
+            @if (!Model.Any())
+            {
+                <div class="empty-state">
+                    <i class="ti ti-folder-open"></i>
+                    <div>Chưa có tài liệu nào. Nhấn "Upload Tài liệu mới" để bắt đầu.</div>
+                </div>
+            }
+            else
+            {
+                <table class="admin-table" id="fileTable">
+                    <thead>
+                        <tr>
+                            <th style="width:50px">STT</th>
+                            <th>Tên tài liệu</th>
+                            <th>Chức năng</th>
+                            <th style="width:70px">Loại</th>
+                            <th>Từ khóa</th>
+                            <th style="width:80px">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var f in Model)
+                        {
+                            var isPdf = f.TenFile?.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) == true
+                            || f.DuongDanFile?.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) == true;
+                            <tr>
+                                <td style="color:var(--c-steel)">@f.STT</td>
+                                <td>
+                                    <div style="display:flex;align-items:center;gap:7px;">
+                                        <i class="ti @(isPdf ? "ti-file-type-pdf" : "ti-file-type-doc")"
+                                           style="color:@(isPdf ? "#DC2626" : "#1565C0");font-size:16px;flex-shrink:0;"></i>
+                                        <div>
+                                            <div style="font-weight:500;color:var(--c-navy);">@f.TenFile</div>
+                                            <div style="font-size:.72rem;color:var(--c-steel);margin-top:1px;font-family:monospace;">@f.DuongDanFile</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge-cn">@f.TenChucNang</span></td>
+                                <td>
+                                    <span style="background:@(isPdf ? "#FEF2F2" : "#EFF6FF");color:@(isPdf ? "#DC2626" : "#1565C0");font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:100px;">
+                                        @(isPdf ? "PDF" : "Word")
+                                    </span>
+                                </td>
+                                <td style="color:var(--c-steel);font-size:.78rem;">@f.Keyword</td>
+                                <td>
+                                    @{
+                                        var _token = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+                                    }
+                                    <button class="btn-primary btn-sm btn-danger"
+                                            onclick="xoaFile(@f.Id, '@f.DuongDanFile', '@Html.Raw(f.TenFile?.Replace("'", "\'"))', '@_token')">
+                                        <i class="ti ti-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/dist/js/admin/quanly/QuanLyFile.js" asp-append-version="true"></script>
+}

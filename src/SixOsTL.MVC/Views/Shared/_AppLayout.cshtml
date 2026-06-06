@@ -1,0 +1,167 @@
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+    var _session = HttpContextAccessor.HttpContext?.Session;
+    var _tenTK = _session?.GetString("TenTK") ?? "Người dùng";
+    var _hoTen = _session?.GetString("HoTen") ?? _tenTK;
+    var _roles = _session?.GetString("Roles") ?? "";
+    var _isAdmin = _roles.Contains("ADMIN");
+    var _curCtrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — SixOs Training</title>
+    <link href="~/dist/css/AppLayout.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/dist/css/Button.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/dist/css/Responsive.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/dist/css/Modal.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/dist/css/Demo.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/dist/webfont/tabler-icons.min.css" rel="stylesheet" />
+    <link href="~/dist/css/tom-select/tom-select.min.css" rel="stylesheet" />
+    <link href="~/dist/css/tom-select/custom.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/dist/css/flatpickr/flatpickr.min.css" rel="stylesheet">
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+    <div id="toast-container"></div>
+    @await Html.PartialAsync("_Modals")
+    <div id="page-loader-body">
+        <div class="page-loader-box">
+            <img src="/static/logo12.svg" height="36" alt="" style="margin-bottom:16px;">
+            <div class="page-loader-text">Đang tải...</div>
+            <div class="progress-bar-wrap">
+                <div class="progress-bar-indeterminate"></div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="app-nav">
+        <a class="nav-brand" href="#">
+            <img src="/static/logo.svg" height="28" alt="SixOs Training" class="nav-logo-img" />
+        </a>
+        <div class="nav-sep"></div>
+        <div class="nav-breadcrumb">
+            <i class="ti ti-home" style="font-size:13px" aria-hidden="true"></i>
+            <i class="ti ti-chevron-right" style="font-size:11px" aria-hidden="true"></i>
+            <span class="cur" id="navBreadcrumb">@(ViewData["Title"] ?? "Trang chủ")</span>
+        </div>
+        <div class="nav-right">
+            @if (_isAdmin)
+            {
+                <a class="nav-btn" href="/Admin/Index" title="Admin dashboard">
+                    <i class="ti ti-layout-dashboard"></i>
+                </a>
+                <a class="nav-btn" href="/TaiLieu/Index" title="Xem tài liệu">
+                    <i class="ti ti-books"></i>
+                </a>
+            }
+            <div class="nav-user">
+                <div class="nav-avatar"><i class="ti ti-user"></i></div>
+                <span class="nav-uname">@_tenTK</span>
+                @if (_isAdmin)
+                {
+                    <span class="nav-role-badge">Admin</span>
+                }
+            </div>
+            <a class="nav-btn danger" href="/Account/Logout" title="Đăng xuất">
+                <i class="ti ti-logout"></i>
+            </a>
+        </div>
+    </nav>
+
+    <div class="app-body">
+        @if (_isAdmin && _curCtrl == "Admin")
+        {
+            <aside class="admin-sidebar">
+                <div class="admin-nav-section">
+                    <div class="admin-nav-label">Tổng quan</div>
+                    <a class="admin-nav-item @(_curCtrl == "Admin" && ViewData["ActiveMenu"]?.ToString() == "dashboard" ? "active" : "")"
+                       href="/Admin/Index">
+                        <i class="ti ti-layout-dashboard"></i> Dashboard
+                    </a>
+                </div>
+                <div class="admin-nav-divider"></div>
+                <div class="admin-nav-section">
+                    <div class="admin-nav-label">Nội dung</div>
+                    <a class="admin-nav-item @(ViewData["ActiveMenu"]?.ToString() == "video" ? "active" : "")"
+                       href="/Admin/QuanLyVideo">
+                        <i class="ti ti-player-play"></i> Video
+                    </a>
+                    <a class="admin-nav-item @(ViewData["ActiveMenu"]?.ToString() == "file" ? "active" : "")"
+                       href="/Admin/QuanLyFile">
+                        <i class="ti ti-files"></i> Tài liệu PDF/Word
+                    </a>
+                    <a class="admin-nav-item @(ViewData["ActiveMenu"]?.ToString() == "chucnang" ? "active" : "")"
+                       href="/Admin/QuanLyChucNang">
+                        <i class="ti ti-folder"></i> Chức năng
+                    </a>
+                </div>
+                <div class="admin-nav-divider"></div>
+                <div class="admin-nav-section">
+                    <div class="admin-nav-label">Người dùng</div>
+                    <a class="admin-nav-item @(ViewData["ActiveMenu"]?.ToString() == "user" ? "active" : "")"
+                       href="/Admin/QuanLyUser">
+                        <i class="ti ti-users"></i> Tài khoản
+                    </a>
+                    <a class="admin-nav-item @(ViewData["ActiveMenu"]?.ToString() == "hoidap" ? "active" : "")"
+                       href="/Admin/QuanLyHoiDap">
+                        <i class="ti ti-messages"></i> Hỏi đáp
+                        @if (ViewBag.PendingCount is int pc && pc > 0)
+                        {
+                            <span class="badge-count">@pc</span>
+                        }
+                    </a>
+                </div>
+                <div class="admin-sidebar-foot">
+                    <a class="admin-foot-link" href="/TaiLieu/Index">
+                        <i class="ti ti-arrow-left"></i> Về trang tài liệu
+                    </a>
+                </div>
+            </aside>
+        }
+        @RenderBody()
+    </div>
+
+    @* Comment panel — dùng cho trang TaiLieu *@
+    @if (_curCtrl == "TaiLieu")
+    {
+        <aside class="comment-panel" id="commentPanel" role="complementary" aria-label="Hỏi đáp">
+            <div class="comment-head">
+                <div class="comment-head-title">
+                    <i class="ti ti-message-circle"></i> Hỏi đáp
+                </div>
+                <button class="btn-close-comment" onclick="toggleComment()" aria-label="Đóng">
+                    <i class="ti ti-x"></i>
+                </button>
+            </div>
+            <div class="comment-body" id="commentBody">
+                <div class="comment-empty" id="commentEmpty">
+                    <i class="ti ti-messages"></i>
+                    Chưa có câu hỏi nào.<br>Hãy đặt câu hỏi bên dưới!
+                </div>
+            </div>
+            <div class="comment-foot">
+                <div class="comment-input-wrap">
+                    <textarea class="comment-input" id="commentInput"
+                          placeholder="Nhập câu hỏi của bạn..." rows="3"></textarea>
+                    <button class="btn-send" onclick="submitComment()" aria-label="Gửi">
+                        <i class="ti ti-send"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+    }
+
+    <script src="~/dist/libs/tom-select/tom-select.complete.min.js"></script>
+    <script src="~/dist/libs/flatpickr/flatpickr.js"></script>
+    <script src="~/dist/libs/flatpickr/vn.js"></script>
+    <script>
+        var _hoTen = "@_hoTen";
+    </script>
+    <script src="~/dist/js/Common.js" asp-append-version="true"></script>
+    <script src="~/dist/js/AppLayout.js" asp-append-version="true"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

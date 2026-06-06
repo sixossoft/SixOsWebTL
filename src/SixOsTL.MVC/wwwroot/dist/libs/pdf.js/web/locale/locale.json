@@ -1,0 +1,12 @@
+[
+  {
+    "code": "vi",
+    "name": "Tiếng Việt",
+    "path": "vi/viewer.ftl"
+  },
+  {
+    "code": "en-US",
+    "name": "English (US)",
+    "path": "en-US/viewer.ftl"
+  }
+]

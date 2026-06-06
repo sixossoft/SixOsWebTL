@@ -1,0 +1,267 @@
+@using SixOsTL.Application.DTOs.TaiLieu
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["ActiveMenu"] = "dashboard";
+    Layout = "~/Views/Shared/_AppLayout.cshtml";
+
+    var stats = ViewBag.Stats as AdminStatsViewModel;
+    var pending = ViewBag.Pending as IEnumerable<HoiDapDto>;
+    var recentV = ViewBag.RecentVideos as IEnumerable<VideoDto>;
+    var recentF = ViewBag.RecentFiles as IEnumerable<FileDto>;
+}
+
+<div class="app-main">
+    <div class="app-main-body">
+
+        @* ── PAGE HEADER ── *@
+        <div style="margin-bottom:24px;">
+            <div style="font-family:var(--font-head);font-size:1.3rem;font-weight:700;color:var(--c-navy);margin-bottom:4px;">
+                Xin chào, @(ViewBag.HoTen ?? "Admin")
+            </div>
+            <div style="font-size:.85rem;color:var(--c-steel);">
+                @DateTime.Now.ToString("dddd, dd/MM/yyyy", new System.Globalization.CultureInfo("vi-VN"))
+            </div>
+        </div>
+
+        @* ── STAT CARDS ── *@
+        <div class="dash-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;">
+
+            <div style="background:var(--c-white);border:1px solid var(--c-border);border-top:3px solid var(--c-primary);border-radius:0 0 var(--radius) var(--radius);padding:16px 18px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                    <span style="font-size:.75rem;color:var(--c-steel);font-weight:500;text-transform:uppercase;letter-spacing:.05em;">Video</span>
+                    <div style="width:34px;height:34px;border-radius:8px;background:var(--c-powder);display:flex;align-items:center;justify-content:center;">
+                        <i class="ti ti-player-play" style="color:var(--c-cyan);font-size:17px;" aria-hidden="true"></i>
+                    </div>
+                </div>
+                <div style="font-family:var(--font-head);font-size:1.75rem;font-weight:700;color:var(--c-navy);">@(stats?.TotalVideos ?? 0)</div>
+                <div style="font-size:.75rem;color:var(--c-steel);margin-top:3px;">video hướng dẫn</div>
+            </div>
+
+            <div style="background:var(--c-white);border:1px solid var(--c-border);border-top:3px solid #DC2626;border-radius:0 0 var(--radius) var(--radius);padding:16px 18px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                    <span style="font-size:.75rem;color:var(--c-steel);font-weight:500;text-transform:uppercase;letter-spacing:.05em;">Tài liệu</span>
+                    <div style="width:34px;height:34px;border-radius:8px;background:#FEF2F2;display:flex;align-items:center;justify-content:center;">
+                        <i class="ti ti-files" style="color:#DC2626;font-size:17px;" aria-hidden="true"></i>
+                    </div>
+                </div>
+                <div style="font-family:var(--font-head);font-size:1.75rem;font-weight:700;color:var(--c-navy);">@(stats?.TotalFiles ?? 0)</div>
+                <div style="font-size:.75rem;color:var(--c-steel);margin-top:3px;">PDF & Word</div>
+            </div>
+
+            <div style="background:var(--c-white);border:1px solid var(--c-border);border-top:3px solid var(--c-success);border-radius:0 0 var(--radius) var(--radius);padding:16px 18px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                    <span style="font-size:.75rem;color:var(--c-steel);font-weight:500;text-transform:uppercase;letter-spacing:.05em;">Người dùng</span>
+                    <div style="width:34px;height:34px;border-radius:8px;background:var(--c-success-bg);display:flex;align-items:center;justify-content:center;">
+                        <i class="ti ti-users" style="color:var(--c-success);font-size:17px;" aria-hidden="true"></i>
+                    </div>
+                </div>
+                <div style="font-family:var(--font-head);font-size:1.75rem;font-weight:700;color:var(--c-navy);">@(stats?.TotalUsers ?? 0)</div>
+                <div style="font-size:.75rem;color:var(--c-steel);margin-top:3px;">tài khoản active</div>
+            </div>
+
+            <div style="background:var(--c-white);border:1px solid var(--c-border);border-top:3px solid var(--c-warn);border-radius:0 0 var(--radius) var(--radius);padding:16px 18px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                    <span style="font-size:.75rem;color:var(--c-steel);font-weight:500;text-transform:uppercase;letter-spacing:.05em;">Chờ phản hồi</span>
+                    <div style="width:34px;height:34px;border-radius:8px;background:var(--c-warn-bg);display:flex;align-items:center;justify-content:center;">
+                        <i class="ti ti-messages" style="color:var(--c-warn);font-size:17px;" aria-hidden="true"></i>
+                    </div>
+                </div>
+                <div style="font-family:var(--font-head);font-size:1.75rem;font-weight:700;color:var(--c-navy);">@(stats?.PendingHoiDap ?? 0)</div>
+                <div style="font-size:.75rem;color:var(--c-warn);margin-top:3px;font-weight:500;">câu hỏi chưa trả lời</div>
+            </div>
+
+        </div>
+
+        @* ── QUICK ACTIONS ── *@
+        <div style="margin-bottom:24px;">
+            <div style="font-family:var(--font-head);font-size:.9rem;font-weight:600;color:var(--c-navy);margin-bottom:12px;display:flex;align-items:center;gap:7px;">
+                <i class="ti ti-bolt" style="color:var(--c-cyan);font-size:16px;" aria-hidden="true"></i>
+                Thao tác nhanh
+            </div>
+            <div class="dash-quick" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+
+                <a href="/Admin/QuanLyVideo#upload"
+                   style="display:flex;align-items:center;gap:10px;padding:13px 15px;background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius);text-decoration:none;transition:box-shadow .15s,transform .15s;"
+                   onmouseover="this.style.boxShadow='0 4px 16px rgba(0,63,125,.1)';this.style.transform='translateY(-2px)'"
+                   onmouseout="this.style.boxShadow='';this.style.transform=''">
+                    <div style="width:38px;height:38px;border-radius:9px;background:var(--c-powder);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="ti ti-video-plus" style="color:var(--c-cyan);font-size:19px;" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:.83rem;font-weight:600;color:var(--c-navy);">Upload Video</div>
+                        <div style="font-size:.72rem;color:var(--c-steel);">Thêm video mới</div>
+                    </div>
+                </a>
+
+                <a href="/Admin/QuanLyFile#upload"
+                   style="display:flex;align-items:center;gap:10px;padding:13px 15px;background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius);text-decoration:none;transition:box-shadow .15s,transform .15s;"
+                   onmouseover="this.style.boxShadow='0 4px 16px rgba(0,63,125,.1)';this.style.transform='translateY(-2px)'"
+                   onmouseout="this.style.boxShadow='';this.style.transform=''">
+                    <div style="width:38px;height:38px;border-radius:9px;background:#FEF2F2;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="ti ti-file-upload" style="color:#DC2626;font-size:19px;" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:.83rem;font-weight:600;color:var(--c-navy);">Upload Tài liệu</div>
+                        <div style="font-size:.72rem;color:var(--c-steel);">PDF hoặc Word</div>
+                    </div>
+                </a>
+
+                <a href="/Admin/QuanLyUser#create"
+                   style="display:flex;align-items:center;gap:10px;padding:13px 15px;background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius);text-decoration:none;transition:box-shadow .15s,transform .15s;"
+                   onmouseover="this.style.boxShadow='0 4px 16px rgba(0,63,125,.1)';this.style.transform='translateY(-2px)'"
+                   onmouseout="this.style.boxShadow='';this.style.transform=''">
+                    <div style="width:38px;height:38px;border-radius:9px;background:var(--c-success-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="ti ti-user-plus" style="color:var(--c-success);font-size:19px;" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:.83rem;font-weight:600;color:var(--c-navy);">Thêm tài khoản</div>
+                        <div style="font-size:.72rem;color:var(--c-steel);">Tạo user mới</div>
+                    </div>
+                </a>
+
+                <a href="/Admin/QuanLyHoiDap"
+                   style="display:flex;align-items:center;gap:10px;padding:13px 15px;background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius);text-decoration:none;transition:box-shadow .15s,transform .15s;position:relative;"
+                   onmouseover="this.style.boxShadow='0 4px 16px rgba(0,63,125,.1)';this.style.transform='translateY(-2px)'"
+                   onmouseout="this.style.boxShadow='';this.style.transform=''">
+                    @if (stats?.PendingHoiDap > 0)
+                    {
+                        <span style="position:absolute;top:8px;right:10px;background:var(--c-warn);color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:100px;">@stats.PendingHoiDap</span>
+                    }
+                    <div style="width:38px;height:38px;border-radius:9px;background:var(--c-warn-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="ti ti-message-report" style="color:var(--c-warn);font-size:19px;" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:.83rem;font-weight:600;color:var(--c-navy);">Phản hồi hỏi đáp</div>
+                        <div style="font-size:.72rem;color:var(--c-steel);">Trả lời câu hỏi</div>
+                    </div>
+                </a>
+
+            </div>
+        </div>
+
+        @* ── 2 COLUMNS: Câu hỏi chờ + Tài liệu mới nhất ── *@
+        <div class="dash-recent" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+            @* CỘT TRÁI: Câu hỏi chờ phản hồi *@
+            <div style="background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius);overflow:hidden;">
+                <div style="padding:13px 16px;border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;">
+                    <div style="display:flex;align-items:center;gap:7px;font-size:.88rem;font-weight:600;color:var(--c-navy);">
+                        <i class="ti ti-messages" style="color:var(--c-warn);font-size:16px;" aria-hidden="true"></i>
+                        Câu hỏi chờ phản hồi
+                        @if (stats?.PendingHoiDap > 0)
+                        {
+                            <span style="background:var(--c-warn-bg);color:var(--c-warn);font-size:.68rem;font-weight:700;padding:1px 7px;border-radius:100px;">@stats.PendingHoiDap</span>
+                        }
+                    </div>
+                    <a href="/Admin/QuanLyHoiDap" style="font-size:.75rem;color:var(--c-cyan);text-decoration:none;font-weight:500;">
+                        Xem tất cả <i class="ti ti-arrow-right" style="font-size:12px;" aria-hidden="true"></i>
+                    </a>
+                </div>
+                <div style="max-height:320px;overflow-y:auto;">
+                    @if (pending == null || !pending.Any())
+                    {
+                        <div style="text-align:center;padding:2rem;color:var(--c-steel);">
+                            <i class="ti ti-circle-check" style="font-size:28px;display:block;margin-bottom:.5rem;color:var(--c-success);opacity:.6;" aria-hidden="true"></i>
+                            <div style="font-size:.83rem;">Không có câu hỏi nào chờ phản hồi</div>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var hd in pending.Take(6))
+                        {
+                            <div style="padding:11px 16px;border-bottom:1px solid var(--c-powder);display:flex;gap:10px;align-items:flex-start;">
+                                <div style="width:30px;height:30px;border-radius:50%;background:var(--c-powder);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">
+                                    <i class="ti ti-user" style="color:var(--c-primary);font-size:14px;" aria-hidden="true"></i>
+                                </div>
+                                <div style="flex:1;min-width:0;">
+                                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+                                        <span style="font-size:.78rem;font-weight:600;color:var(--c-navy);">@(hd.TenNguoiHoi ?? "Người dùng")</span>
+                                        <span style="font-size:.7rem;color:var(--c-steel);">@hd.NgayTao.ToString("dd/MM HH:mm")</span>
+                                    </div>
+                                    <div style="font-size:.8rem;color:var(--c-text);line-height:1.45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">@hd.NoiDung</div>
+                                    <div style="margin-top:5px;display:flex;gap:6px;">
+                                        <a href="/Admin/QuanLyHoiDap?id=@hd.Id"
+                                           style="display:inline-flex;align-items:center;gap:4px;font-size:.72rem;color:var(--c-cyan);font-weight:500;text-decoration:none;">
+                                            <i class="ti ti-arrow-forward-up" style="font-size:12px;" aria-hidden="true"></i> Trả lời
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            @* CỘT PHẢI: Tài liệu mới nhất *@
+            <div style="background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius);overflow:hidden;">
+                <div style="padding:13px 16px;border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;">
+                    <div style="display:flex;align-items:center;gap:7px;font-size:.88rem;font-weight:600;color:var(--c-navy);">
+                        <i class="ti ti-clock" style="color:var(--c-cyan);font-size:16px;" aria-hidden="true"></i>
+                        Tài liệu mới thêm
+                    </div>
+                    <a href="/Admin/QuanLyVideo" style="font-size:.75rem;color:var(--c-cyan);text-decoration:none;font-weight:500;">
+                        Quản lý <i class="ti ti-arrow-right" style="font-size:12px;" aria-hidden="true"></i>
+                    </a>
+                </div>
+                <div style="max-height:320px;overflow-y:auto;">
+                    @{
+                        var hasContent = (recentV != null && recentV.Any()) || (recentF != null && recentF.Any());
+                    }
+                    @if (!hasContent)
+                    {
+                        <div style="text-align:center;padding:2rem;color:var(--c-steel);">
+                            <i class="ti ti-folder-open" style="font-size:28px;display:block;margin-bottom:.5rem;opacity:.35;" aria-hidden="true"></i>
+                            <div style="font-size:.83rem;">Chưa có tài liệu nào</div>
+                        </div>
+                    }
+                    else
+                    {
+                        @if (recentV != null)
+                        {
+                            @foreach (var v in recentV.Take(3))
+                            {
+                                <div style="padding:10px 16px;border-bottom:1px solid var(--c-powder);display:flex;align-items:center;gap:10px;">
+                                    <div style="width:30px;height:30px;border-radius:7px;background:var(--c-powder);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                        <i class="ti ti-player-play" style="color:var(--c-cyan);font-size:14px;" aria-hidden="true"></i>
+                                    </div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:.8rem;color:var(--c-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">@v.TenVideo</div>
+                                        <div style="font-size:.7rem;color:var(--c-steel);margin-top:1px;">Video · @v.STT</div>
+                                    </div>
+                                    <span style="background:#E0F2FE;color:#0369A1;font-size:.65rem;font-weight:600;padding:1px 7px;border-radius:100px;flex-shrink:0;">Video</span>
+                                </div>
+                            }
+                        }
+                        @if (recentF != null)
+                        {
+                            @foreach (var f in recentF.Take(3))
+                            {
+                                var isPdf = f.TenFile?.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) == true;
+                                var bgColor = isPdf ? "#FEF2F2" : "#EFF6FF";
+                                var textColor = isPdf ? "#DC2626" : "#1565C0";
+                                <div style="padding:10px 16px;border-bottom:1px solid var(--c-powder);display:flex;align-items:center;gap:10px;">
+                                    <div style="width:30px;height:30px;border-radius:7px;background:@bgColor;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                        @await Html.PartialAsync("_FileIcon", isPdf)
+                                    </div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:.8rem;color:var(--c-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                            @f.TenFile
+                                        </div>
+                                        <div style="font-size:.7rem;color:var(--c-steel);margin-top:1px;">
+                                            @(isPdf ? "PDF" : "Word") · @f.STT
+                                        </div>
+                                    </div>
+                                    <span style="background:@bgColor;color:@textColor;font-size:.65rem;font-weight:600;padding:1px 7px;border-radius:100px;flex-shrink:0;">
+                                        @(isPdf ? "PDF" : "Word")
+                                    </span>
+                                </div>
+                            }
+                        }
+                    }
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>

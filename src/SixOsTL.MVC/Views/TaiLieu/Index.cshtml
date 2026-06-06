@@ -1,0 +1,188 @@
+@using SixOsTL.Application.DTOs.DanhMuc
+@using SixOsTL.Application.DTOs.TaiLieu
+@model IEnumerable<ChucNangDto>
+@{
+    ViewData["Title"] = "Tài liệu";
+    Layout = "~/Views/Shared/_AppLayout.cshtml";
+    @* Group theo SanPham *@
+    var grouped = Model
+        .GroupBy(c => new { c.IDSanPham, c.TenSanPham })
+        .OrderBy(g => g.Key.IDSanPham);
+}
+
+@section Styles {
+    <link href="~/dist/css/client/TaiLieu.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/dist/css/client/VideoLienQuan.css" rel="stylesheet" asp-append-version="true" />
+}
+
+@Html.AntiForgeryToken()
+
+@* ── SIDEBAR ── *@
+<aside class="sidebar">
+    <div class="sidebar-search">
+        <div class="search-box">
+            <i class="ti ti-search" aria-hidden="true"></i>
+            <input class="search-input" type="text" id="searchInput" placeholder="Tìm kiếm tài liệu..." oninput="handleSearch(this)" autocomplete="off" />
+            <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Xóa tìm kiếm"><i class="ti ti-x"></i></button>
+        </div>
+        <div id="searchFilterWrap"></div>
+    </div>
+
+    <div class="sidebar-list" id="sidebarList">
+
+        @* Kết quả tìm kiếm (ẩn mặc định) *@
+        <div id="searchResults" style="display:none; padding: 4px 0;"></div>
+
+        @* Danh sách gốc *@
+        <div id="defaultList">
+            @foreach (var sp in grouped)
+            {
+                @* Nhãn sản phẩm (nếu có nhiều sản phẩm) *@
+                if (grouped.Count() > 1)
+                {
+                    <div style="padding:6px 12px 3px; font-size:.7rem; font-weight:600; color:var(--c-steel); text-transform:uppercase; letter-spacing:.07em;">
+                        @sp.Key.TenSanPham
+                    </div>
+                }
+
+                @foreach (var cn in sp.OrderBy(x => x.ChucNang))
+                {
+                    var videos = ViewBag.VideosByChucNang != null
+                    ? ((Dictionary<long, IEnumerable<VideoDto>>)ViewBag.VideosByChucNang).GetValueOrDefault(cn.Id)
+                    : null;
+                    var files = ViewBag.FilesByChucNang != null
+                    ? ((Dictionary<long, IEnumerable<FileDto>>)ViewBag.FilesByChucNang).GetValueOrDefault(cn.Id)
+                    : null;
+
+                    int totalCount = (videos?.Count() ?? 0) + (files?.Count() ?? 0);
+                    if (totalCount == 0) continue;
+
+                    <div class="doc-group" id="group-@cn.Id" data-group-name="@cn.ChucNang?.ToLower()" data-sp-name="@sp.Key.TenSanPham">
+                        <div class="group-header" onclick="toggleGroup(@cn.Id)">
+                            <div class="group-left">
+                                <i class="ti ti-folder" aria-hidden="true"></i>
+                                <span class="group-name">@cn.ChucNang</span>
+                            </div>
+                            <div class="group-right">
+                                <span class="group-count">@totalCount</span>
+                                <i class="ti ti-chevron-right group-arrow" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                        <div class="group-items">
+                            @* Videos *@
+                            @if (videos != null)
+                            {
+                                @foreach (var v in videos.OrderBy(x => x.STT))
+                                {
+                                    <div class="doc-item"
+                                         id="item-v-@v.Id"
+                                         data-id="@v.Id"
+                                         data-type="video"
+                                         data-path="@v.DuongDanFileVideo"
+                                         data-name="@v.TenVideo"
+                                         data-group="@cn.ChucNang"
+                                         data-cn-id="@cn.Id"
+                                         data-keyword="@v.Keyword?.ToLower() @v.TenVideo?.ToLower()"
+                                         onclick="openDoc(this)">
+                                        <div class="doc-icon video">
+                                            <i class="ti ti-player-play" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="doc-info">
+                                            <div class="doc-name">@v.TenVideo</div>
+                                            <div class="doc-meta">Video</div>
+                                            @if (!string.IsNullOrEmpty(v.STT))
+                                            {
+                                                <div class="doc-stt">STT: @v.STT</div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            @* Files *@
+                            @if (files != null)
+                            {
+                                @foreach (var f in files.OrderBy(x => x.STT))
+                                {
+                                    var isPdf = f.TenFile?.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) == true
+                                    || f.DuongDanFile?.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) == true;
+                                    var iconCls = isPdf ? "pdf" : "word";
+
+                                    <div class="doc-item"
+                                         id="item-f-@f.Id"
+                                         data-id="@f.Id"
+                                         data-type="@(isPdf ? "pdf" : "word")"
+                                         data-path="@f.DuongDanFile"
+                                         data-name="@f.TenFile"
+                                         data-group="@cn.ChucNang"
+                                         data-cn-id="@cn.Id"
+                                         data-keyword="@f.Keyword?.ToLower() @f.TenFile?.ToLower()"
+                                         onclick="openDoc(this)">
+                                        <div class="doc-icon @iconCls">
+                                            @await Html.PartialAsync("_FileIcon", isPdf)
+                                        </div>
+                                        <div class="doc-info">
+                                            <div class="doc-name">@f.TenFile</div>
+                                            <div class="doc-meta">@(isPdf ? "PDF" : "Word")</div>
+                                            @if (!string.IsNullOrEmpty(f.STT))
+                                            {
+                                                <div class="doc-stt">STT: @f.STT</div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                    <div class="group-divider"></div>
+                }
+            }
+        </div>
+
+        <div class="search-empty" id="searchEmpty">
+            <i class="ti ti-search-off"></i>
+            Không tìm thấy tài liệu
+        </div>
+    </div>
+</aside>
+
+@* ── MAIN VIEWER ── *@
+<main class="viewer">
+    <div class="viewer-bar" id="viewerBar" style="display:none;">
+        <button class="btn-back-sidebar" onclick="backToSidebar()" aria-label="Quay lại">
+            <i class="ti ti-arrow-left"></i>
+        </button>
+        <div class="viewer-info">
+            <div class="viewer-title">
+                <i class="ti ti-player-play" id="viewerIcon" aria-hidden="true"></i>
+                <span id="viewerTitle">—</span>
+            </div>
+            <div class="viewer-meta">
+                <span id="viewerGroup"></span>
+                <span style="color:var(--c-border)">·</span>
+                <span class="viewer-badge badge-video" id="viewerBadge">Video</span>
+            </div>
+        </div>
+        <div class="viewer-actions">
+            <a class="btn-action" id="btnDownload" href="#" download target="_blank">
+                <i class="ti ti-download"></i> Tải về
+            </a>
+            <button class="btn-icon" onclick="toggleComment()" aria-label="Hỏi đáp" title="Hỏi đáp">
+                <i class="ti ti-message-circle"></i>
+                <span class="badge-dot" id="commentDot"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="viewer-empty" id="viewerEmpty">
+        <div class="empty-box">
+            <i class="ti ti-books"></i>
+            <h3>Chọn tài liệu để bắt đầu</h3>
+            <p>Chọn một video, PDF hoặc file Word từ danh sách bên trái để xem nội dung.</p>
+        </div>
+    </div>
+    <div class="viewer-body" id="viewerBody" style="display:none;"></div>
+</main>
+
+@section Scripts {
+    <script src="~/dist/js/TaiLieu/TaiLieu.js" asp-append-version="true"></script>
+}

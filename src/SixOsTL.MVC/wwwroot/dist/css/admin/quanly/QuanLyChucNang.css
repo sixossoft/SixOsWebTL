@@ -1,0 +1,138 @@
+﻿.admin-table {
+    width: 100%;
+    border-collapse: collapse
+}
+
+    .admin-table th {
+        padding: 9px 12px;
+        text-align: left;
+        font-size: .72rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: var(--c-steel);
+        background: var(--c-ice);
+        border-bottom: 1px solid var(--c-border)
+    }
+
+    .admin-table td {
+        padding: 10px 12px;
+        font-size: .83rem;
+        color: var(--c-text);
+        border-bottom: 1px solid var(--c-powder);
+        vertical-align: middle
+    }
+
+    .admin-table tr:last-child td {
+        border-bottom: none
+    }
+
+    .admin-table tr:hover td {
+        background: #FAFCFF
+    }
+
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px
+}
+
+.page-title {
+    font-family: var(--font-head);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--c-navy)
+}
+
+.page-sub {
+    font-size: .8rem;
+    color: var(--c-steel);
+    margin-top: 2px
+}
+
+.card {
+    background: var(--c-white);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 16px
+}
+
+.card-head {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--c-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between
+}
+
+.card-title {
+    font-size: .88rem;
+    font-weight: 600;
+    color: var(--c-navy);
+    display: flex;
+    align-items: center;
+    gap: 7px
+}
+
+    .card-title i {
+        color: var(--c-cyan);
+        font-size: 16px
+    }
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 14px
+}
+
+.form-label {
+    font-size: .78rem;
+    font-weight: 500;
+    color: var(--c-navy)
+}
+
+.form-ctrl {
+    height: 38px;
+    padding: 0 10px;
+    border: 1.5px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: .85rem;
+    color: var(--c-text);
+    outline: none;
+    transition: border-color .15s
+}
+
+    .form-ctrl:focus {
+        border-color: var(--c-cyan);
+        box-shadow: 0 0 0 3px rgba(8,145,178,.1)
+    }
+
+    .form-ctrl.full {
+        width: 100%
+    }
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px
+}
+
+.badge-sp {
+    background: var(--c-powder);
+    color: var(--c-primary);
+    font-size: .72rem;
+    padding: 2px 8px;
+    border-radius: 100px
+}
+
+.badge-mucdo {
+    background: #FFF8E1;
+    color: #F9A825;
+    font-size: .72rem;
+    padding: 2px 8px;
+    border-radius: 100px
+}
