@@ -83,7 +83,7 @@ public class TaiLieuController : Controller
             if (!System.IO.File.Exists(cachePath))
             {
                 var tempPath = cachePath + ".tmp";
-                var result = await _ftp.DownloadToLocalPathAsync(path, tempPath, ct);
+                var result = await _ftp.DownloadToLocalPathAsync(path, tempPath, ct);//
                 if (!result.Success)
                 {
                     if (System.IO.File.Exists(tempPath)) System.IO.File.Delete(tempPath);
