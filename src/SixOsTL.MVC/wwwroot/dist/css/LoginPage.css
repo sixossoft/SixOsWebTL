@@ -26,11 +26,11 @@
 }
 
 :root {
-    --c-navy: #003F7D;
-    --c-navy-deep: #002D5A;
-    --c-navy-mid: #004D96;
-    --c-primary: #0057A8;
-    --c-cyan: #0891B2;
+    --c-navy: #206bc4;
+    --c-navy-deep: #206bc4;
+    --c-navy-mid: #206bc4;
+    --c-primary: #206bc4;
+    --c-cyan: #206bc4;
     --c-sky: #38BDF8;
     --c-sky-light: #7EC8F0;
     --c-ice: #F0F7FF;

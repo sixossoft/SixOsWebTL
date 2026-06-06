@@ -26,11 +26,11 @@
 }
 
 :root {
-    --c-navy: #003F7D;
-    --c-navy-deep: #002D5A;
-    --c-navy-mid: #004D96;
-    --c-primary: #0057A8;
-    --c-cyan: #0891B2;
+    --c-navy: #206bc4;
+    --c-navy-deep: #206bc4;
+    --c-navy-mid: #206bc4;
+    --c-primary: #206bc4;
+    --c-cyan: #206bc4;
     --c-sky: #38BDF8;
     --c-ice: #F0F7FF;
     --c-powder: #EBF4FF;
@@ -251,7 +251,7 @@ body {
     font-weight: 600;
     letter-spacing: .1em;
     text-transform: uppercase;
-    color: rgba(255,255,255,.3);
+    color: rgba(255,255,255,.5);
     padding: 0 6px;
     margin-bottom: 4px;
 }
@@ -263,9 +263,9 @@ body {
     padding: 8px 10px;
     border-radius: var(--radius-sm);
     text-decoration: none;
-    color: rgba(255,255,255,.6);
+    color: rgba(255,255,255,.85);
     font-size: .83rem;
-    font-weight: 400;
+    font-weight: 500;
     transition: background .15s, color .15s;
     margin-bottom: 1px;
 }
@@ -314,7 +314,7 @@ body {
     padding: 7px 10px;
     border-radius: var(--radius-sm);
     text-decoration: none;
-    color: rgba(255,255,255,.45);
+    color: rgba(255,255,255,.7);
     font-size: .8rem;
     transition: color .15s;
 }
@@ -429,7 +429,7 @@ body {
 
 .badge-word {
     background: #EFF6FF;
-    color: #1565C0;
+    color: #206bc4;
 }
 
 .viewer-actions {
@@ -766,7 +766,7 @@ body {
     }
 
     .doc-icon.word i {
-        color: #1565C0;
+        color: #206bc4;
         font-size: 13px;
     }
 
