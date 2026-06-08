@@ -18,6 +18,7 @@ namespace SixOsTL.Application.Common.Interfaces
         DbSet<TaiLieuVideoTag> VideoTags { get; }
         DbSet<TaiLieuVideoTagMap> VideoTagMaps { get; }
         DbSet<TaiLieuVideoLienQuan> VideoLienQuans { get; }
+        DbSet<LichSuXemVideo> LichSuXemVideos { get; }
         Task<int> SaveChangesAsync(CancellationToken ct = default);
     }
 }

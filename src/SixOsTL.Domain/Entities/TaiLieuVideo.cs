@@ -19,5 +19,6 @@ namespace SixOsTL.Domain.Entities
         public DmChucNang ChucNang { get; set; } = default!;
         public ICollection<TaiLieuVideoTagMap> VideoTagMaps { get; set; } = new List<TaiLieuVideoTagMap>();
         public ICollection<TaiLieuVideoLienQuan> LienQuans { get; set; } = new List<TaiLieuVideoLienQuan>();
+        public ICollection<LichSuXemVideo> LichSuXemVideos { get; set; } = new List<LichSuXemVideo>();
     }
 }
