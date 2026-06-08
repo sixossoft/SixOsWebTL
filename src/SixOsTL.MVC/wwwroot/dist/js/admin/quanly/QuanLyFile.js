@@ -1,6 +1,12 @@
 ﻿function toggleGroup(id) {
     const grp = document.getElementById('group-' + id);
-    if (grp) grp.classList.toggle('open');
+    if (!grp) return;
+    document.querySelectorAll('.doc-group').forEach(g => {
+        if (g !== grp) {
+            g.classList.remove('open');
+        }
+    });
+    grp.classList.toggle('open');
 }
 
 function expandAllGroups() {
@@ -13,6 +19,7 @@ function collapseAllGroups() {
 
 document.addEventListener('DOMContentLoaded', () => {
     initDropZone('fileDropZone', 'docFile', 'docFileName');
+    collapseAllGroups();
 });
 
 function openUploadModal() {
