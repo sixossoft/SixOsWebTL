@@ -207,7 +207,9 @@ function renderViewer(type, url, name) {
                 <div style="font-size:1rem;font-weight:600;color:var(--c-navy);margin-bottom:.4rem;">
                     ${name}
                 </div>
-               
+                <p style="font-size:.83rem;color:var(--c-steel);margin-bottom:1.5rem;">
+                    Tài liệu Word không thể xem trực tiếp trên trình duyệt.
+                </p>
                 <a href="${url}" download
                    style="display:inline-flex;align-items:center;gap:7px;padding:.7rem 1.75rem;
                           background:var(--c-navy);color:#fff;border-radius:var(--radius-sm);
@@ -598,7 +600,6 @@ var _FILTER_META = {
     all: { label: 'Tất cả', iconHtml: '<i class="ti ti-files"></i>' },
     video: { label: 'Video', iconHtml: '<i class="ti ti-player-play"></i>' },
     pdf: { label: 'PDF', iconHtml: _ICON_PDF },
-    
 };
 
 function setSearchFilter(value) {
