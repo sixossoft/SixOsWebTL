@@ -1,7 +1,7 @@
 @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
 @using SixOsTL.Application.DTOs.DanhMuc
 @using SixOsTL.Application.DTOs.TaiLieu
-@model IEnumerable<VideoDto>
+@model IEnumerable<ChucNangDto>
 @{
     ViewData["Title"] = "Quản lý Video";
     ViewData["ActiveMenu"] = "video";
@@ -24,6 +24,11 @@
                 <i class="ti ti-plus"></i> Upload Video mới
             </button>
         </div>
+
+        @{
+            var _adminToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+        }
+        <input type="hidden" id="adminCsrfToken" value="@_adminToken" />
 
         @* UPLOAD FORM trong Modal *@
         <div class="modal-overlay" id="uploadModal">
@@ -88,65 +93,89 @@
         @* TABLE *@
         <div class="card card-responsive">
             <div class="card-head">
-                <div class="card-title"><i class="ti ti-list"></i> Danh sách Video (@Model.Count())</div>
-                <div class="search-bar">
-                    <div class="search-bar-wrap">
-                        <i class="ti ti-search"></i>
-                        <input type="text" placeholder="Tìm video..." oninput="filterTable(this,'videoTable')" />
+                <div class="card-title"><i class="ti ti-list"></i> Danh sách Video</div>
+                <div style="display:flex; gap: 8px; align-items: center;">
+                    <div class="search-bar">
+                        <div class="search-bar-wrap">
+                            <i class="ti ti-search"></i>
+                            <input type="text" placeholder="Tìm video..." oninput="filterTable(this,'videoTable')" />
+                        </div>
                     </div>
                 </div>
             </div>
-            @if (!Model.Any())
-            {
-                <div class="empty-state">
-                    <i class="ti ti-video-off"></i>
-                    <div>Chưa có video nào. Nhấn "Upload Video mới" để bắt đầu.</div>
-                </div>
-            }
-            else
-            {
-                <table class="admin-table" id="videoTable">
-                    <thead>
-                        <tr>
-                            <th style="width:50px">STT</th>
-                            <th>Tên video</th>
-                            <th>Chức năng</th>
-                            <th>Từ khóa</th>
-                            <th style="width:110px">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var v in Model)
-                        {
-                            <tr>
-                                <td style="color:var(--c-steel)">@v.STT</td>
-                                <td>
-                                    <div style="font-weight:500;color:var(--c-navy);">@v.TenVideo</div>
-                                    <div style="font-size:.72rem;color:var(--c-steel);margin-top:2px;font-family:monospace;">@v.DuongDanFileVideo</div>
-                                </td>
-                                <td><span class="badge-cn">@v.TenChucNang</span></td>
-                                <td style="color:var(--c-steel);font-size:.78rem;">@v.Keyword</td>
-                                <td>
-                                    <div style="display:flex;gap:5px;">
-                                        @{
-                                            var _token = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+
+            <div class="admin-grouped-list">
+                @foreach (var cn in Model)
+                {
+                    var videos = ViewBag.VideosByChucNang != null
+                        ? ((Dictionary<long, IEnumerable<VideoDto>>)ViewBag.VideosByChucNang).GetValueOrDefault(cn.Id)
+                        : null;
+                    var count = videos?.Count() ?? 0;
+
+                    <div class="doc-group" id="group-@cn.Id">
+                        <div class="group-header" onclick="toggleGroup('@cn.Id')" style="background: var(--c-ice); border-bottom: 1px solid var(--c-border);">
+                            <div class="group-left" style="pointer-events: none;">
+                                <i class="ti ti-chevron-right group-arrow" style="font-size: 12px;"></i>
+                                <i class="ti ti-folder" style="margin-left: 2px;"></i>
+                                <span class="group-name" style="font-weight:700;">@cn.TenSanPham — @cn.ChucNang</span>
+                            </div>
+                            <div class="group-right" style="pointer-events: none;">
+                                <span class="group-count">@count</span>
+                            </div>
+                        </div>
+                        <div class="group-items" style="padding: 0;">
+                            @if (count == 0)
+                            {
+                                <div style="padding: 20px; text-align: center; color: var(--c-steel); font-style: italic; font-size: 0.85rem;">
+                                    Chưa có video cho chức năng này
+                                </div>
+                            }
+                            else
+                            {
+                                <table class="admin-table no-border" style="margin:0;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:50px">STT</th>
+                                            <th>Tên video</th>
+                                            <th>Từ khóa</th>
+                                            <th style="width:110px">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var v in videos!)
+                                        {
+                                            <tr>
+                                                <td style="color:var(--c-steel)">@v.STT</td>
+                                                <td>
+                                                    <div style="font-weight:500;color:var(--c-navy);">@v.TenVideo</div>
+                                                    <div style="font-size:.72rem;color:var(--c-steel);margin-top:2px;font-family:monospace;">@v.DuongDanFileVideo</div>
+                                                </td>
+                                                <td style="color:var(--c-steel);font-size:.78rem;">@v.Keyword</td>
+                                                <td>
+                                                    <div style="display:flex;gap:5px;">
+                                                        @{
+                                                            var _token = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+                                                        }
+                                                        <button class="btn-primary btn-sm btn-warn"
+                                                                title="Quản lý video liên quan"
+                                                                onclick="openLienQuanModal(@v.Id, '@Html.Raw(v.TenVideo?.Replace("'", "\'"))', '@_token')">
+                                                            <i class="ti ti-link"></i>
+                                                        </button>
+                                                        <button class="btn-primary btn-sm btn-danger"
+                                                                onclick="xoaVideo(@v.Id, @v.IDChucNang, '@v.DuongDanFileVideo', '@Html.Raw(v.TenVideo?.Replace("'", "\'"))', '@_token')">
+                                                            <i class="ti ti-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
                                         }
-                                        <button class="btn-primary btn-sm btn-warn"
-                                                title="Quản lý video liên quan"
-                                                onclick="openLienQuanModal(@v.Id, '@Html.Raw(v.TenVideo?.Replace("'", "\'"))', '@_token')">
-                                            <i class="ti ti-link"></i>
-                                        </button>
-                                        <button class="btn-primary btn-sm btn-danger"
-                                                onclick="xoaVideo(@v.Id, @v.IDChucNang, '@v.DuongDanFileVideo', '@Html.Raw(v.TenVideo?.Replace("'", "\'"))', '@_token')">
-                                            <i class="ti ti-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
+                                    </tbody>
+                                </table>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
 
     </div>

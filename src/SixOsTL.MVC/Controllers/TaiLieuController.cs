@@ -25,12 +25,12 @@ public class TaiLieuController : Controller
         var roles = HttpContext.Session.GetRoles();
         var isAdmin = roles.Contains("ADMIN");
 
-        var query = _db.ChucNangs.Where(c => c.Active);
+        var query = _db.ChucNangs.AsQueryable();
         
-        // Nếu không phải ADMIN, lọc theo bảng DM_VaiTro_ChucNang
+        // Nếu không phải ADMIN, lọc theo Active và bảng DM_VaiTro_ChucNang
         if (!isAdmin)
         {
-            query = query.Where(c => _db.VaiTroChucNangs
+            query = query.Where(c => c.Active && _db.VaiTroChucNangs
                 .Any(rv => rv.IDChucNang == c.Id && roles.Contains(rv.VaiTro.MaVaiTro)));
         }
 

@@ -1,4 +1,17 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+﻿function toggleGroup(id) {
+    const grp = document.getElementById('group-' + id);
+    if (grp) grp.classList.toggle('open');
+}
+
+function expandAllGroups() {
+    document.querySelectorAll('.doc-group').forEach(g => g.classList.add('open'));
+}
+
+function collapseAllGroups() {
+    document.querySelectorAll('.doc-group').forEach(g => g.classList.remove('open'));
+}
+
+document.addEventListener('DOMContentLoaded', () => {
     initDropZone('videoDropZone', 'videoFile', 'videoFileName');
 });
 

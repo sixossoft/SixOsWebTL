@@ -30,7 +30,6 @@ namespace SixOsTL.MVC.Controllers
 
         private async Task LoadChucNangDropdown(CancellationToken ct) =>
             ViewBag.ChucNangs = await _db.ChucNangs
-                .Where(c => c.Active)
                 .OrderBy(c => c.IDSanPham).ThenBy(c => c.ChucNang)
                 .Select(c => new ChucNangDto(c.Id, c.IDSanPham, c.SanPham.TenSP, c.ChucNang, null, null))
                 .ToListAsync(ct);
@@ -87,14 +86,21 @@ namespace SixOsTL.MVC.Controllers
             ViewData["ActiveMenu"] = "video";
             ViewBag.PendingCount = await PendingCount(ct);
 
-            var videos = await _db.Videos.Where(v => v.Active)
-                .OrderBy(v => v.IDChucNang).ThenBy(v => v.STT)
-                .Select(v => new VideoDto(v.Id, v.STT, v.IDChucNang,
-                    v.ChucNang.ChucNang, v.TenVideo, v.Keyword, v.DuongDanFileVideo))
+            var chucNangs = await _db.ChucNangs
+                .OrderBy(c => c.IDSanPham).ThenBy(c => c.ChucNang)
+                .Select(c => new ChucNangDto(c.Id, c.IDSanPham, c.SanPham.TenSP, c.ChucNang, null, null))
                 .ToListAsync(ct);
 
+            var cnIds = chucNangs.Select(c => c.Id).ToList();
+            var allVideos = await _db.Videos
+                .Where(v => cnIds.Contains(v.IDChucNang))
+                .OrderBy(v => v.STT)
+                .Select(v => new VideoDto(v.Id, v.STT, v.IDChucNang, null, v.TenVideo, v.Keyword, v.DuongDanFileVideo))
+                .ToListAsync(ct);
+
+            ViewBag.VideosByChucNang = allVideos.GroupBy(v => v.IDChucNang).ToDictionary(g => g.Key, g => g.AsEnumerable());
             await LoadChucNangDropdown(ct);
-            return View(videos);
+            return View(chucNangs);
         }
 
         [HttpPost, ValidateAntiForgeryToken]
@@ -149,7 +155,7 @@ namespace SixOsTL.MVC.Controllers
         public async Task<IActionResult> SearchVideos(string? q, long excludeId, CancellationToken ct)
         {
             if (GuardAdmin() is { } r) return r;
-            var query = _db.Videos.Where(v => v.Active && v.Id != excludeId);
+            var query = _db.Videos.Where(v => v.Id != excludeId);
             if (!string.IsNullOrWhiteSpace(q))
                 query = query.Where(v => v.TenVideo.Contains(q) || (v.Keyword != null && v.Keyword.Contains(q)));
             var result = await query
@@ -185,14 +191,21 @@ namespace SixOsTL.MVC.Controllers
             ViewData["ActiveMenu"] = "file";
             ViewBag.PendingCount = await PendingCount(ct);
 
-            var files = await _db.Files.Where(f => f.Active)
-                .OrderBy(f => f.IDChucNang).ThenBy(f => f.STT)
-                .Select(f => new FileDto(f.Id, f.STT, f.IDChucNang,
-                    f.ChucNang.ChucNang, f.TenFile, f.Keyword, f.DuongDanFile))
+            var chucNangs = await _db.ChucNangs
+                .OrderBy(c => c.IDSanPham).ThenBy(c => c.ChucNang)
+                .Select(c => new ChucNangDto(c.Id, c.IDSanPham, c.SanPham.TenSP, c.ChucNang, null, null))
                 .ToListAsync(ct);
 
+            var cnIds = chucNangs.Select(c => c.Id).ToList();
+            var allFiles = await _db.Files
+                .Where(f => cnIds.Contains(f.IDChucNang))
+                .OrderBy(f => f.STT)
+                .Select(f => new FileDto(f.Id, f.STT, f.IDChucNang, null, f.TenFile, f.Keyword, f.DuongDanFile))
+                .ToListAsync(ct);
+
+            ViewBag.FilesByChucNang = allFiles.GroupBy(f => f.IDChucNang).ToDictionary(g => g.Key, g => g.AsEnumerable());
             await LoadChucNangDropdown(ct);
-            return View(files);
+            return View(chucNangs);
         }
 
         [HttpPost, ValidateAntiForgeryToken]
@@ -232,13 +245,13 @@ namespace SixOsTL.MVC.Controllers
             ViewData["ActiveMenu"] = "chucnang";
             ViewBag.PendingCount = await PendingCount(ct);
 
-            var cns = await _db.ChucNangs.Where(c => c.Active)
+            var cns = await _db.ChucNangs
                 .Select(c => new ChucNangDto(c.Id, c.IDSanPham, c.SanPham.TenSP,
                     c.ChucNang, c.DuongDanFile,
                     c.MucDoUuTien != null ? c.MucDoUuTien.MucDo : null))
                 .ToListAsync(ct);
 
-            ViewBag.SanPhams = await _db.SanPhams.Where(s => s.Active)
+            ViewBag.SanPhams = await _db.SanPhams
                 .Select(s => new { s.Id, s.TenSP }).ToListAsync(ct);
             ViewBag.MucDos = await _db.MucDoUuTiens
                 .Select(m => new { m.Id, m.MucDo }).ToListAsync(ct);

@@ -1,7 +1,7 @@
 @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
 @using SixOsTL.Application.DTOs.DanhMuc
 @using SixOsTL.Application.DTOs.TaiLieu
-@model IEnumerable<FileDto>
+@model IEnumerable<ChucNangDto>
 @{
     ViewData["Title"] = "Quản lý Tài liệu";
     ViewData["ActiveMenu"] = "file";
@@ -88,72 +88,96 @@
 
         <div class="card card-responsive">
             <div class="card-head">
-                <div class="card-title"><i class="ti ti-list"></i> Danh sách Tài liệu (@Model.Count())</div>
-                <div class="search-bar">
-                    <div class="search-bar-wrap">
-                        <i class="ti ti-search"></i>
-                        <input type="text" placeholder="Tìm tài liệu..." oninput="filterTable(this,'fileTable')" />
+                <div class="card-title"><i class="ti ti-list"></i> Danh sách Tài liệu</div>
+                <div style="display:flex; gap: 8px; align-items: center;">
+                    <div class="search-bar" style="margin-left: 8px;">
+                        <div class="search-bar-wrap">
+                            <i class="ti ti-search"></i>
+                            <input type="text" placeholder="Tìm tài liệu..." oninput="filterTable(this,'fileTable')" />
+                        </div>
                     </div>
                 </div>
             </div>
-            @if (!Model.Any())
-            {
-                <div class="empty-state">
-                    <i class="ti ti-folder-open"></i>
-                    <div>Chưa có tài liệu nào. Nhấn "Upload Tài liệu mới" để bắt đầu.</div>
-                </div>
-            }
-            else
-            {
-                <table class="admin-table" id="fileTable">
-                    <thead>
-                        <tr>
-                            <th style="width:50px">STT</th>
-                            <th>Tên tài liệu</th>
-                            <th>Chức năng</th>
-                            <th style="width:70px">Loại</th>
-                            <th>Từ khóa</th>
-                            <th style="width:80px">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var f in Model)
-                        {
-                            var isPdf = f.TenFile?.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) == true
-                            || f.DuongDanFile?.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) == true;
-                            <tr>
-                                <td style="color:var(--c-steel)">@f.STT</td>
-                                <td>
-                                    <div style="display:flex;align-items:center;gap:7px;">
-                                        <i class="ti @(isPdf ? "ti-file-type-pdf" : "ti-file-type-doc")"
-                                           style="color:@(isPdf ? "#DC2626" : "#1565C0");font-size:16px;flex-shrink:0;"></i>
-                                        <div>
-                                            <div style="font-weight:500;color:var(--c-navy);">@f.TenFile</div>
-                                            <div style="font-size:.72rem;color:var(--c-steel);margin-top:1px;font-family:monospace;">@f.DuongDanFile</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td><span class="badge-cn">@f.TenChucNang</span></td>
-                                <td>
-                                    <span style="background:@(isPdf ? "#FEF2F2" : "#EFF6FF");color:@(isPdf ? "#DC2626" : "#1565C0");font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:100px;">
-                                        @(isPdf ? "PDF" : "Word")
-                                    </span>
-                                </td>
-                                <td style="color:var(--c-steel);font-size:.78rem;">@f.Keyword</td>
-                                <td>
-                                    @{
-                                        var _token = Antiforgery.GetAndStoreTokens(Context).RequestToken;
-                                    }
-                                    <button class="btn-primary btn-sm btn-danger"
-                                            onclick="xoaFile(@f.Id, '@f.DuongDanFile', '@Html.Raw(f.TenFile?.Replace("'", "\'"))', '@_token')">
-                                        <i class="ti ti-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
+
+            <div class="admin-grouped-list">
+                @foreach (var cn in Model)
+                {
+                    var files = ViewBag.FilesByChucNang != null
+                        ? ((Dictionary<long, IEnumerable<FileDto>>)ViewBag.FilesByChucNang).GetValueOrDefault(cn.Id)
+                        : null;
+                    var count = files?.Count() ?? 0;
+
+                    <div class="doc-group open" id="group-@cn.Id">
+                        <div class="group-header" onclick="toggleGroup('@cn.Id')" style="background: var(--c-ice); border-bottom: 1px solid var(--c-border);">
+                            <div class="group-left" style="pointer-events: none;">
+                                <i class="ti ti-chevron-right group-arrow" style="font-size: 12px;"></i>
+                                <i class="ti ti-folder" style="margin-left: 2px;"></i>
+                                <span class="group-name" style="font-weight:700;">@cn.TenSanPham — @cn.ChucNang</span>
+                            </div>
+                            <div class="group-right" style="pointer-events: none;">
+                                <span class="group-count">@count</span>
+                            </div>
+                        </div>
+                        <div class="group-items" style="padding: 0;">
+                            @if (count == 0)
+                            {
+                                <div style="padding: 20px; text-align: center; color: var(--c-steel); font-style: italic; font-size: 0.85rem;">
+                                    Chưa có tài liệu cho chức năng này
+                                </div>
+                            }
+                            else
+                            {
+                                <table class="admin-table no-border" style="margin:0;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:50px">STT</th>
+                                            <th>Tên tài liệu</th>
+                                            <th style="width:70px">Loại</th>
+                                            <th>Từ khóa</th>
+                                            <th style="width:80px">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var f in files!)
+                                        {
+                                            var isPdf = f.TenFile?.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) == true
+                                            || f.DuongDanFile?.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) == true;
+                                            <tr>
+                                                <td style="color:var(--c-steel)">@f.STT</td>
+                                                <td>
+                                                    <div style="display:flex;align-items:center;gap:7px;">
+                                                        <i class="ti @(isPdf ? "ti-file-type-pdf" : "ti-file-type-doc")"
+                                                           style="color:@(isPdf ? "#DC2626" : "#1565C0");font-size:16px;flex-shrink:0;"></i>
+                                                        <div>
+                                                            <div style="font-weight:500;color:var(--c-navy);">@f.TenFile</div>
+                                                            <div style="font-size:.72rem;color:var(--c-steel);margin-top:1px;font-family:monospace;">@f.DuongDanFile</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span style="background:@(isPdf ? "#FEF2F2" : "#EFF6FF");color:@(isPdf ? "#DC2626" : "#1565C0");font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:100px;">
+                                                        @(isPdf ? "PDF" : "Word")
+                                                    </span>
+                                                </td>
+                                                <td style="color:var(--c-steel);font-size:.78rem;">@f.Keyword</td>
+                                                <td>
+                                                    @{
+                                                        var _token = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+                                                    }
+                                                    <button class="btn-primary btn-sm btn-danger"
+                                                            onclick="xoaFile(@f.Id, '@f.DuongDanFile', '@Html.Raw(f.TenFile?.Replace("'", "\'"))', '@_token')">
+                                                        <i class="ti ti-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
     </div>
 </div>

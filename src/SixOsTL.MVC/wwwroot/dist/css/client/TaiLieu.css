@@ -1,4 +1,4 @@
-﻿@media (max-width: 768px) {
+@media (max-width: 768px) {
     .sidebar {
         width: 100% !important;
         height: auto !important;
@@ -33,3 +33,81 @@
     color: var(--c-navy);
     margin-right: 8px;
 }
+
+/* ── SUB GROUP HIERARCHY ── */
+.sub-group {
+    margin-bottom: 4px;
+}
+
+.sub-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    cursor: pointer;
+    user-select: none;
+    transition: background .15s;
+    border-radius: var(--radius-sm);
+}
+
+.sub-group-header:hover {
+    background: var(--c-ice);
+}
+
+.sub-group-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.sub-group-left i {
+    color: var(--c-steel);
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.sub-group-left i.sub-group-arrow {
+    font-size: 10px;
+    transition: transform .2s ease;
+}
+
+.sub-group.open .sub-group-left i.sub-group-arrow {
+    transform: rotate(90deg);
+}
+
+.sub-group-name {
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--c-steel);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sub-group-right {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.sub-group-count {
+    background: transparent;
+    color: var(--c-steel);
+    font-size: .68rem;
+    font-weight: 600;
+    padding: 1px 5px;
+    border: 1px solid var(--c-border);
+    border-radius: 100px;
+}
+
+.sub-group-items {
+    padding-left: 12px;
+    display: none;
+    margin-top: 2px;
+}
+
+.sub-group.open .sub-group-items {
+    display: block;
+}
+

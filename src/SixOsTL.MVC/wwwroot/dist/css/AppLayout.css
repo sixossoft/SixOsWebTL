@@ -554,6 +554,32 @@ body {
     flex-direction: column;
     flex-shrink: 0;
     overflow: hidden;
+    transition: width 0.2s ease;
+}
+
+.sidebar.collapsed {
+    width: 40px;
+}
+
+.sidebar.collapsed .sidebar-search,
+.sidebar.collapsed .sidebar-toolbar > div:first-child,
+.sidebar.collapsed .sidebar-toolbar .btn-toolbar:not(:last-child),
+.sidebar.collapsed .sidebar-list {
+    display: none !important;
+}
+
+.sidebar.collapsed .sidebar-toolbar {
+    padding: 8px 0 !important;
+    justify-content: center !important;
+}
+
+.sidebar.collapsed .sidebar-toolbar .btn-toolbar:last-child {
+    margin: 0 !important;
+    border: none !important;
+}
+
+.sidebar.collapsed .sidebar-toolbar .btn-toolbar:last-child i {
+    transform: rotate(180deg);
 }
 
 .sidebar-search {
