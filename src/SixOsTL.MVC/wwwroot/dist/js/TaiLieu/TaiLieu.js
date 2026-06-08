@@ -180,6 +180,7 @@ function renderViewer(type, url, name) {
         if (vid) {
             vid.addEventListener('ended', _onVideoEnded);
             vid.addEventListener('click', _onVideoClick);
+            vid.addEventListener('loadedmetadata', _restoreVideoHistory);
             vid.addEventListener('pause', _queueSaveVideoHistory);
             vid.addEventListener('seeked', _queueSaveVideoHistory);
             vid.addEventListener('timeupdate', _trackVideoProgress);
@@ -226,6 +227,25 @@ function renderViewer(type, url, name) {
 function onVideoReady(video) {
     const err = document.getElementById('videoErrorMsg');
     if (err) err.style.display = 'none';
+}
+
+function _restoreVideoHistory() {
+    const vid = document.getElementById('mainVideo');
+    const currentVideoId = vid?.dataset?.videoId || _currentVideoId;
+    if (!vid || !currentVideoId) return;
+
+    fetch('/TaiLieu/GetLichSuXemVideo?idVideo=' + encodeURIComponent(currentVideoId))
+        .then(r => {
+            if (!r.ok) return null;
+            return r.json();
+        })
+        .then(data => {
+            if (!data || typeof data.tongGiay !== 'number' || data.tongGiay <= 0) return;
+            const safeTime = Math.max(0, data.tongGiay - 1);
+            if (Number.isFinite(vid.duration) && safeTime >= Math.floor(vid.duration)) return;
+            vid.currentTime = safeTime;
+        })
+        .catch(() => { });
 }
 
 function onVideoError(video) {

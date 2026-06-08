@@ -157,4 +157,21 @@ public class TaiLieuController : Controller
         await _service.UpsertLichSuXemVideoAsync(idVideo, userId.Value, phut, giay, ct);
         return Ok();
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetLichSuXemVideo(long idVideo, CancellationToken ct)
+    {
+        var userId = HttpContext.Session.GetUserId();
+        if (userId is null) return Unauthorized();
+
+        var history = await _service.GetLichSuXemVideoAsync(idVideo, userId.Value, ct);
+        if (history is null) return Json(null);
+
+        return Json(new
+        {
+            phut = history.Value.Phut,
+            giay = history.Value.Giay,
+            tongGiay = (history.Value.Phut ?? 0) * 60 + (history.Value.Giay ?? 0)
+        });
+    }
 }
