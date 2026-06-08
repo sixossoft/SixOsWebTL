@@ -180,6 +180,7 @@ function renderViewer(type, url, name) {
         if (vid) {
             vid.addEventListener('ended', _onVideoEnded);
             vid.addEventListener('click', _onVideoClick);
+            vid.addEventListener('loadedmetadata', _restoreVideoHistory);
             vid.addEventListener('pause', _queueSaveVideoHistory);
             vid.addEventListener('seeked', _queueSaveVideoHistory);
             vid.addEventListener('timeupdate', _trackVideoProgress);
@@ -207,7 +208,9 @@ function renderViewer(type, url, name) {
                 <div style="font-size:1rem;font-weight:600;color:var(--c-navy);margin-bottom:.4rem;">
                     ${name}
                 </div>
-                
+                <p style="font-size:.83rem;color:var(--c-steel);margin-bottom:1.5rem;">
+                    Tài liệu Word không thể xem trực tiếp trên trình duyệt.
+                </p>
                 <a href="${url}" download
                    style="display:inline-flex;align-items:center;gap:7px;padding:.7rem 1.75rem;
                           background:var(--c-navy);color:#fff;border-radius:var(--radius-sm);
@@ -224,6 +227,25 @@ function renderViewer(type, url, name) {
 function onVideoReady(video) {
     const err = document.getElementById('videoErrorMsg');
     if (err) err.style.display = 'none';
+}
+
+function _restoreVideoHistory() {
+    const vid = document.getElementById('mainVideo');
+    const currentVideoId = vid?.dataset?.videoId || _currentVideoId;
+    if (!vid || !currentVideoId) return;
+
+    fetch('/TaiLieu/GetLichSuXemVideo?idVideo=' + encodeURIComponent(currentVideoId))
+        .then(r => {
+            if (!r.ok) return null;
+            return r.json();
+        })
+        .then(data => {
+            if (!data || typeof data.tongGiay !== 'number' || data.tongGiay <= 0) return;
+            const safeTime = Math.max(0, data.tongGiay - 1);
+            if (Number.isFinite(vid.duration) && safeTime >= Math.floor(vid.duration)) return;
+            vid.currentTime = safeTime;
+        })
+        .catch(() => { });
 }
 
 function onVideoError(video) {
@@ -598,7 +620,6 @@ var _FILTER_META = {
     all: { label: 'Tất cả', iconHtml: '<i class="ti ti-files"></i>' },
     video: { label: 'Video', iconHtml: '<i class="ti ti-player-play"></i>' },
     pdf: { label: 'PDF', iconHtml: _ICON_PDF },
-        
 };
 
 function setSearchFilter(value) {

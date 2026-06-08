@@ -147,6 +147,14 @@ namespace SixOsTL.Infrastructure.Services
             await _db.SaveChangesAsync(ct);
         }
 
+        public async Task<(int? Phut, int? Giay)?> GetLichSuXemVideoAsync(long idVideo, long idTaiKhoanDt, CancellationToken ct = default)
+        {
+            return await _db.Set<LichSuXemVideo>()
+                .Where(x => x.IDVideo == idVideo && x.IDTaiKhoanDT == idTaiKhoanDt)
+                .Select(x => new ValueTuple<int?, int?>(x.Phut, x.Giay))
+                .FirstOrDefaultAsync(ct);
+        }
+
         // ── TAG-BASED: tự động build related list từ tag chung ──────────
         // gọi 1 lần khi admin muốn đồng bộ tag -> VideoLienQuan
         public async Task SyncTagBasedLienQuanAsync(long idVideo, CancellationToken ct = default)

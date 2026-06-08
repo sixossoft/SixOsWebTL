@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using SixOsTL.Application.Common.Interfaces;
 using SixOsTL.Infrastructure.Settings;
 using AppFtpFileInfo = SixOsTL.Application.DTOs.Ftp.FtpFileInfo;
+using AppFtpFolderInfo = SixOsTL.Application.DTOs.Ftp.FtpFolderInfo;
 using AppFtpResult = SixOsTL.Application.DTOs.Ftp.FtpResult;
 
 namespace SixOsTL.Infrastructure.Services;
@@ -59,6 +60,12 @@ public class FtpService : IFtpService
         item.Size,
         item.Modified,
         item.Type == FtpObjectType.Directory
+    );
+
+    private static AppFtpFolderInfo ToFolderInfo(FtpListItem item) => new(
+        item.Name,
+        item.FullName,
+        false
     );
 
     // ── UPLOAD ───────────────────────────────────────────────
@@ -288,6 +295,40 @@ public class FtpService : IFtpService
         {
             _logger.LogError(ex, "FTP ListDirectory error: {Path}", full);
             return Enumerable.Empty<AppFtpFileInfo>();
+        }
+    }
+
+    public async Task<IEnumerable<AppFtpFolderInfo>> ListFoldersAsync(string remotePath, CancellationToken ct = default)
+    {
+        var full = FullPath(remotePath);
+        try
+        {
+            await using var client = await CreateConnectedClientAsync(ct);
+            var items = await client.GetListing(full, ct);
+            return items
+                .Where(x => x.Type == FtpObjectType.Directory && x.Name != "." && x.Name != "..")
+                .Select(ToFolderInfo)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "FTP ListFolders error: {Path}", full);
+            return Enumerable.Empty<AppFtpFolderInfo>();
+        }
+    }
+
+    public async Task<bool> PathExistsAsync(string remotePath, CancellationToken ct = default)
+    {
+        var full = FullPath(remotePath);
+        try
+        {
+            await using var client = await CreateConnectedClientAsync(ct);
+            return await client.DirectoryExists(full, ct) || await client.FileExists(full, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "FTP PathExists error: {Path}", full);
+            return false;
         }
     }
 
