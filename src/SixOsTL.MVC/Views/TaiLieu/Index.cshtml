@@ -28,6 +28,10 @@
         <div id="searchFilterWrap"></div>
     </div>
 
+    <div style="padding: 14px 16px; border-bottom: 1px solid var(--c-border); background: #f8fafc; font-size: .75rem; color: var(--c-navy); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
+        Danh mục tài liệu
+    </div>
+
     <div class="sidebar-list" id="sidebarList">
 
         @* Kết quả tìm kiếm (ẩn mặc định) *@
@@ -37,13 +41,10 @@
         <div id="defaultList">
             @foreach (var sp in grouped)
             {
-                @* Nhãn sản phẩm (nếu có nhiều sản phẩm) *@
-                if (grouped.Count() > 1)
-                {
-                    <div style="padding:6px 12px 3px; font-size:.7rem; font-weight:600; color:var(--c-steel); text-transform:uppercase; letter-spacing:.07em;">
-                        @sp.Key.TenSanPham
-                    </div>
-                }
+                @* Nhãn sản phẩm (LUÔN HIỆN) *@
+                <div style="padding:10px 12px 4px; font-size:.7rem; font-weight:700; color:var(--c-primary); text-transform:uppercase; letter-spacing:.07em; opacity: 0.85;">
+                    <i class="ti ti-package" style="margin-right:2px;"></i> @sp.Key.TenSanPham
+                </div>
 
                 @foreach (var cn in sp.OrderBy(x => x.ChucNang))
                 {
@@ -55,81 +56,118 @@
                     : null;
 
                     int totalCount = (videos?.Count() ?? 0) + (files?.Count() ?? 0);
-                    if (totalCount == 0) continue;
+                    
+                    @* Nếu không phải ADMIN và không có tài liệu thì ẩn *@
+                    bool isAdmin = ViewContext.HttpContext.Session.GetRoles().Contains("ADMIN");
+                    if (!isAdmin && totalCount == 0) continue;
 
                     <div class="doc-group" id="group-@cn.Id" data-group-name="@cn.ChucNang?.ToLower()" data-sp-name="@sp.Key.TenSanPham">
-                        <div class="group-header" onclick="toggleGroup(@cn.Id)">
-                            <div class="group-left">
-                                <i class="ti ti-folder" aria-hidden="true"></i>
+                        <div class="group-header" onclick="toggleGroup('@cn.Id')">
+                            <div class="group-left" style="pointer-events: none;">
+                                <i class="ti ti-chevron-right group-arrow" aria-hidden="true" style="font-size: 12px;"></i>
+                                <i class="ti ti-folder" aria-hidden="true" style="margin-left: 2px;"></i>
                                 <span class="group-name">@cn.ChucNang</span>
                             </div>
-                            <div class="group-right">
+                            <div class="group-right" style="pointer-events: none;">
                                 <span class="group-count">@totalCount</span>
-                                <i class="ti ti-chevron-right group-arrow" aria-hidden="true"></i>
                             </div>
                         </div>
                         <div class="group-items">
-                            @* Videos *@
-                            @if (videos != null)
+                            @if (totalCount == 0)
                             {
-                                @foreach (var v in videos.OrderBy(x => x.STT))
-                                {
-                                    <div class="doc-item"
-                                         id="item-v-@v.Id"
-                                         data-id="@v.Id"
-                                         data-type="video"
-                                         data-path="@v.DuongDanFileVideo"
-                                         data-name="@v.TenVideo"
-                                         data-group="@cn.ChucNang"
-                                         data-cn-id="@cn.Id"
-                                         data-keyword="@v.Keyword?.ToLower() @v.TenVideo?.ToLower()"
-                                         onclick="openDoc(this)">
-                                        <div class="doc-icon video">
-                                            <i class="ti ti-player-play" aria-hidden="true"></i>
+                                <div class="doc-item-empty" style="padding: 12px 16px; color: var(--c-steel); font-size: 0.8rem; font-style: italic;">
+                                    <i class="ti ti-info-circle" style="margin-right: 4px;"></i> Chưa có tài liệu
+                                </div>
+                            }
+                            @* Videos *@
+                            @if (videos != null && videos.Any())
+                            {
+                                <div class="sub-group open" id="sub-group-video-@cn.Id">
+                                    <div class="sub-group-header" onclick="toggleSubGroup('video-@cn.Id')">
+                                        <div class="sub-group-left" style="pointer-events: none;">
+                                            <i class="ti ti-chevron-right sub-group-arrow" aria-hidden="true" style="font-size: 11px;"></i>
+                                            <i class="ti ti-video" aria-hidden="true" style="margin-left: 2px;"></i>
+                                            <span class="sub-group-name">Video hướng dẫn</span>
                                         </div>
-                                        <div class="doc-info">
-                                            <div class="doc-name">@v.TenVideo</div>
-                                            <div class="doc-meta">Video</div>
-                                            @if (!string.IsNullOrEmpty(v.STT))
-                                            {
-                                                <div class="doc-stt">STT: @v.STT</div>
-                                            }
+                                        <div class="sub-group-right" style="pointer-events: none;">
+                                            <span class="sub-group-count">@videos.Count()</span>
                                         </div>
                                     </div>
-                                }
+                                    <div class="sub-group-items">
+                                        @foreach (var v in videos.OrderBy(x => x.STT))
+                                        {
+                                            <div class="doc-item"
+                                                 id="item-v-@v.Id"
+                                                 data-id="@v.Id"
+                                                 data-type="video"
+                                                 data-path="@v.DuongDanFileVideo"
+                                                 data-name="@v.TenVideo"
+                                                 data-group="@cn.ChucNang"
+                                                 data-cn-id="@cn.Id"
+                                                 data-keyword="@v.Keyword?.ToLower() @v.TenVideo?.ToLower()"
+                                                 onclick="openDoc(this)">
+                                                <div class="doc-icon video">
+                                                    <i class="ti ti-player-play" aria-hidden="true"></i>
+                                                </div>
+                                                <div class="doc-info">
+                                                    <div class="doc-name">@v.TenVideo</div>
+                                                    <div class="doc-meta">Video</div>
+                                                    @if (!string.IsNullOrEmpty(v.STT))
+                                                    {
+                                                        <div class="doc-stt">STT: @v.STT</div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
                             }
                             @* Files *@
-                            @if (files != null)
+                            @if (files != null && files.Any())
                             {
-                                @foreach (var f in files.OrderBy(x => x.STT))
-                                {
-                                    var isPdf = f.TenFile?.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) == true
-                                    || f.DuongDanFile?.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) == true;
-                                    var iconCls = isPdf ? "pdf" : "word";
-
-                                    <div class="doc-item"
-                                         id="item-f-@f.Id"
-                                         data-id="@f.Id"
-                                         data-type="@(isPdf ? "pdf" : "word")"
-                                         data-path="@f.DuongDanFile"
-                                         data-name="@f.TenFile"
-                                         data-group="@cn.ChucNang"
-                                         data-cn-id="@cn.Id"
-                                         data-keyword="@f.Keyword?.ToLower() @f.TenFile?.ToLower()"
-                                         onclick="openDoc(this)">
-                                        <div class="doc-icon @iconCls">
-                                            @await Html.PartialAsync("_FileIcon", isPdf)
+                                <div class="sub-group open" id="sub-group-file-@cn.Id">
+                                    <div class="sub-group-header" onclick="toggleSubGroup('file-@cn.Id')">
+                                        <div class="sub-group-left" style="pointer-events: none;">
+                                            <i class="ti ti-chevron-right sub-group-arrow" aria-hidden="true" style="font-size: 11px;"></i>
+                                            <i class="ti ti-files" aria-hidden="true" style="margin-left: 2px;"></i>
+                                            <span class="sub-group-name">Tài liệu</span>
                                         </div>
-                                        <div class="doc-info">
-                                            <div class="doc-name">@f.TenFile</div>
-                                            <div class="doc-meta">@(isPdf ? "PDF" : "Word")</div>
-                                            @if (!string.IsNullOrEmpty(f.STT))
-                                            {
-                                                <div class="doc-stt">STT: @f.STT</div>
-                                            }
+                                        <div class="sub-group-right" style="pointer-events: none;">
+                                            <span class="sub-group-count">@files.Count()</span>
                                         </div>
                                     </div>
-                                }
+                                    <div class="sub-group-items">
+                                        @foreach (var f in files.OrderBy(x => x.STT))
+                                        {
+                                            var isPdf = f.TenFile?.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) == true
+                                            || f.DuongDanFile?.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) == true;
+                                            var iconCls = isPdf ? "pdf" : "word";
+
+                                            <div class="doc-item"
+                                                 id="item-f-@f.Id"
+                                                 data-id="@f.Id"
+                                                 data-type="@(isPdf ? "pdf" : "word")"
+                                                 data-path="@f.DuongDanFile"
+                                                 data-name="@f.TenFile"
+                                                 data-group="@cn.ChucNang"
+                                                 data-cn-id="@cn.Id"
+                                                 data-keyword="@f.Keyword?.ToLower() @f.TenFile?.ToLower()"
+                                                 onclick="openDoc(this)">
+                                                <div class="doc-icon @iconCls">
+                                                    @await Html.PartialAsync("_FileIcon", isPdf)
+                                                </div>
+                                                <div class="doc-info">
+                                                    <div class="doc-name">@f.TenFile</div>
+                                                    <div class="doc-meta">@(isPdf ? "PDF" : "Word")</div>
+                                                    @if (!string.IsNullOrEmpty(f.STT))
+                                                    {
+                                                        <div class="doc-stt">STT: @f.STT</div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
                             }
                         </div>
                     </div>
@@ -185,4 +223,34 @@
 
 @section Scripts {
     <script src="~/dist/js/TaiLieu/TaiLieu.js" asp-append-version="true"></script>
+    <script>
+        function toggleGroup(id, isSearch = false) {
+            const selector = isSearch ? '#searchResults .doc-group' : '#defaultList .doc-group';
+            const prefix = isSearch ? 'sr-group-container-' : 'group-';
+            const grp = document.getElementById(prefix + id);
+            if (!grp) return;
+
+            document.querySelectorAll(selector).forEach(g => {
+                if (g !== grp) {
+                    g.classList.remove('open');
+                }
+            });
+
+            grp.classList.toggle('open');
+        }
+
+        function toggleSubGroup(subId) {
+            const grp = document.getElementById('sub-group-' + subId);
+            if (grp) {
+                grp.classList.toggle('open');
+            }
+        }
+
+        function collapseAllGroups() {
+            document.querySelectorAll('#defaultList .doc-group, #searchResults .doc-group').forEach(g => g.classList.remove('open'));
+        }
+
+        document.addEventListener('DOMContentLoaded', collapseAllGroups);
+    </script>
 }
+

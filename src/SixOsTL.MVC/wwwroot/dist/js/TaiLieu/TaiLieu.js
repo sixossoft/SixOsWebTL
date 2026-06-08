@@ -1,4 +1,4 @@
-﻿// ── State ─────────────────────────────────────────────────────
+// ── State ─────────────────────────────────────────────────────
 var _activeItem = null;
 var _currentDocId = null;   // IDChucNang của doc đang mở
 var _currentVideoId = null;   // ID của video đang mở (data-id)
@@ -13,9 +13,32 @@ var _ICON_PDF = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" str
 
 
 // ── Group toggle ───────────────────────────────────────────────
-function toggleGroup(id) {
-    const grp = document.getElementById('group-' + id);
-    grp.classList.toggle('open');
+function toggleGroup(id, isSearch = false) {
+    const prefix = isSearch ? 'sr-group-container-' : 'group-';
+    const grp = document.getElementById(prefix + id);
+    if (grp) {
+        const selector = isSearch ? '#searchResults .doc-group' : '#defaultList .doc-group';
+        document.querySelectorAll(selector).forEach(g => {
+            if (g !== grp) {
+                g.classList.remove('open');
+            }
+        });
+        grp.classList.toggle('open');
+    }
+}
+
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const viewer = document.querySelector('.viewer');
+    const isCollapsed = sidebar.style.width === '40px';
+
+    if (isCollapsed) {
+        sidebar.style.width = '300px';
+        sidebar.classList.remove('collapsed');
+    } else {
+        sidebar.style.width = '40px';
+        sidebar.classList.add('collapsed');
+    }
 }
 
 // ── Mở tài liệu ───────────────────────────────────────────────
@@ -32,6 +55,17 @@ function openDoc(el) {
     const cnId = el.dataset.cnId;
     const itemId = el.dataset.id;
     _currentDocId = cnId;
+
+    // Auto-open parent group and close other groups
+    const grp = document.getElementById('group-' + cnId);
+    if (grp) {
+        document.querySelectorAll('#defaultList .doc-group').forEach(g => {
+            if (g !== grp) {
+                g.classList.remove('open');
+            }
+        });
+        grp.classList.add('open');
+    }
     _currentVideoId = (type === 'video') ? itemId : null;
     document.getElementById('navBreadcrumb').textContent = name;
     document.getElementById('viewerBar').style.display = '';
@@ -49,7 +83,7 @@ function openDoc(el) {
         badge.classList.add('badge-pdf'); badge.textContent = 'PDF';
         icon.className = '';
         icon.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
-    } 
+    }
     const streamUrl = '/TaiLieu/StreamFile?path=' + encodeURIComponent(path) + '&fileName=' + encodeURIComponent(name);
     document.getElementById('btnDownload').href = streamUrl;
 
@@ -574,7 +608,7 @@ function initSearchFilter() {
         { value: 'all', label: 'Tất cả', iconHtml: '<i class="ti ti-files"></i>' },
         { value: 'video', label: 'Video', iconHtml: '<i class="ti ti-player-play"></i>' },
         { value: 'pdf', label: 'PDF', iconHtml: _ICON_PDF },
-        
+
     ];
     wrap.innerHTML = `
         <div class="filter-dropdown" id="filterDropdown">
@@ -620,6 +654,7 @@ var _FILTER_META = {
     all: { label: 'Tất cả', iconHtml: '<i class="ti ti-files"></i>' },
     video: { label: 'Video', iconHtml: '<i class="ti ti-player-play"></i>' },
     pdf: { label: 'PDF', iconHtml: _ICON_PDF },
+        
 };
 
 function setSearchFilter(value) {
@@ -661,7 +696,7 @@ function handleSearch(input) {
             const t = el.dataset.type || '';
             if (_searchFilter === 'video' && t !== 'video') return false;
             if (_searchFilter === 'pdf' && t !== 'pdf') return false;
-            
+
         }
         if (hasQuery) {
             const kw = (el.dataset.keyword || '') + ' ' + (el.dataset.name || '').toLowerCase();
@@ -682,15 +717,34 @@ function handleSearch(input) {
         </div>`;
 
     // ── Group theo ChucNang rồi render header ──────────────────
-    const groups = new Map(); // cnId → { spName, cnName, items[] }
-    matched.forEach(el => {
-        const cnId = el.dataset.cnId;
-        const cnName = el.dataset.group || '';
-        const docGroup = el.closest('.doc-group');
-        const spName = docGroup?.dataset.spName || '';
-        if (!groups.has(cnId)) groups.set(cnId, { spName, cnName, items: [] });
-        groups.get(cnId).items.push(el);
+    const groups = new Map(); // cnId → { spName, cnName, cnId, items[] }
+
+    // Đảm bảo tất cả các group đều xuất hiện trong kết quả (theo yêu cầu "load hết")
+    const allGroups = document.querySelectorAll('#defaultList .doc-group');
+    allGroups.forEach(docGroup => {
+        const cnId = docGroup.id.replace('group-', '');
+        const cnName = docGroup.querySelector('.group-name').textContent;
+        const spName = docGroup.dataset.spName || '';
+
+        // Lọc các item thuộc group này mà khớp với query/filter
+        const groupItems = Array.from(allItems).filter(el => {
+            if (el.dataset.cnId !== cnId) return false;
+
+            if (hasFilter) {
+                const t = el.dataset.type || '';
+                if (_searchFilter === 'video' && t !== 'video') return false;
+                if (_searchFilter === 'pdf' && t !== 'pdf') return false;
+            }
+            if (hasQuery) {
+                const kw = (el.dataset.keyword || '') + ' ' + (el.dataset.name || '').toLowerCase();
+                if (!kw.includes(q)) return false;
+            }
+            return true;
+        });
+
+        groups.set(cnId, { spName, cnName, cnId, items: groupItems });
     });
+
     groups.forEach(({ spName, cnName, cnId, items }) => {
         if (spName) {
             const spLabel = document.createElement('div');
@@ -699,11 +753,13 @@ function handleSearch(input) {
             searchResults.appendChild(spLabel);
         }
         const group = document.createElement('div');
-        group.className = 'doc-group open';
+        group.className = 'doc-group';
+        group.id = 'sr-group-container-' + cnId;
         group.innerHTML = `
-        <div class="group-header" style="pointer-events:none;">
+        <div class="group-header" onclick="toggleGroup(${cnId}, true)">
             <div class="group-left">
-                <i class="ti ti-folder" aria-hidden="true"></i>
+                <i class="ti ti-chevron-right group-arrow" style="font-size: 12px;"></i>
+                <i class="ti ti-folder" aria-hidden="true" style="margin-left: 2px;"></i>
                 <span class="group-name">${cnName}</span>
             </div>
             <div class="group-right">
@@ -713,19 +769,24 @@ function handleSearch(input) {
         <div class="group-items" id="sr-group-${cnId}"></div>`;
         searchResults.appendChild(group);
         const itemsContainer = group.querySelector(`#sr-group-${cnId}`);
-        items.forEach(el => {
-            const clone = el.cloneNode(true);
-            clone.classList.remove('active');
-            if (_activeItem === el) clone.classList.add('active');
-            clone.removeAttribute('onclick');
-            clone.addEventListener('click', () => {
-                document.querySelectorAll('#searchResults .doc-item').forEach(c => c.classList.remove('active'));
-                clone.classList.add('active');
-                _activeItem = el;
-                openDoc(el);
+
+        if (items.length === 0) {
+            itemsContainer.innerHTML = `<div class="doc-item-empty" style="padding: 10px 16px; color: var(--c-steel); font-size: 0.75rem; font-style: italic;">Chưa có tài liệu phù hợp</div>`;
+        } else {
+            items.forEach(el => {
+                const clone = el.cloneNode(true);
+                clone.classList.remove('active');
+                if (_activeItem === el) clone.classList.add('active');
+                clone.removeAttribute('onclick');
+                clone.addEventListener('click', () => {
+                    document.querySelectorAll('#searchResults .doc-item').forEach(c => c.classList.remove('active'));
+                    clone.classList.add('active');
+                    _activeItem = el;
+                    openDoc(el);
+                });
+                itemsContainer.appendChild(clone);
             });
-            itemsContainer.appendChild(clone);
-        });
+        }
         const divider = document.createElement('div');
         divider.className = 'group-divider';
         searchResults.appendChild(divider);
