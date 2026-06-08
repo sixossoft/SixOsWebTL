@@ -5,6 +5,8 @@ var _currentVideoId = null;   // ID của video đang mở (data-id)
 var _relatedVideos = [];     // cache danh sách related
 var _countdownTimer = null;   // setInterval ref
 var _searchFilter = 'video'; // mặc định filter = video
+var _historySaveTimer = null;
+var _lastSavedVideoTime = -1;
 // ── Autoplay countdown ────────────────────────
 var _COUNTDOWN_SEC = 7;
 var _ICON_PDF = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>`;
@@ -126,6 +128,10 @@ function _destroyCurrentVideo() {
     if (!vid) return;
     vid.removeEventListener('ended', _onVideoEnded);
     vid.removeEventListener('click', _onVideoClick);
+    vid.removeEventListener('pause', _queueSaveVideoHistory);
+    vid.removeEventListener('seeked', _queueSaveVideoHistory);
+    vid.removeEventListener('timeupdate', _trackVideoProgress);
+    _flushVideoHistory();
     vid.pause();
     vid.removeAttribute('src');
     vid.querySelectorAll('source').forEach(s => s.remove());
@@ -143,6 +149,7 @@ function renderViewer(type, url, name) {
                 controls
                 controlsList="nodownload"
                 preload="auto"
+                data-video-id="${_currentVideoId ?? ''}"
                 style="width:100%;flex:1;min-height:0;display:block;background:#001830;"
                 onloadedmetadata="onVideoReady(this)"
                 onerror="onVideoError(this)">
@@ -177,6 +184,9 @@ function renderViewer(type, url, name) {
         if (vid) {
             vid.addEventListener('ended', _onVideoEnded);
             vid.addEventListener('click', _onVideoClick);
+            vid.addEventListener('pause', _queueSaveVideoHistory);
+            vid.addEventListener('seeked', _queueSaveVideoHistory);
+            vid.addEventListener('timeupdate', _trackVideoProgress);
         }
 
     } else if (type === 'pdf') {
@@ -226,6 +236,53 @@ function onVideoError(video) {
     const err = document.getElementById('videoErrorMsg');
     if (err) err.style.display = 'flex';
     video.style.display = 'none';
+}
+
+function _getCurrentVideoTimeParts() {
+    const vid = document.getElementById('mainVideo');
+    if (!vid || !Number.isFinite(vid.currentTime)) return null;
+    const total = Math.floor(vid.currentTime);
+    return { phut: Math.floor(total / 60), giay: total % 60 };
+}
+
+function _queueSaveVideoHistory() {
+    clearTimeout(_historySaveTimer);
+    _historySaveTimer = setTimeout(_flushVideoHistory, 700);
+}
+
+function _trackVideoProgress() {
+    const vid = document.getElementById('mainVideo');
+    if (!vid || !Number.isFinite(vid.currentTime)) return;
+    const current = Math.floor(vid.currentTime);
+    if (current === _lastSavedVideoTime) return;
+    if (current % 5 !== 0) return;
+    _lastSavedVideoTime = current;
+    _queueSaveVideoHistory();
+}
+
+function _flushVideoHistory() {
+    clearTimeout(_historySaveTimer);
+    _historySaveTimer = null;
+
+    const vid = document.getElementById('mainVideo');
+    const currentVideoId = vid?.dataset?.videoId || _currentVideoId;
+    const timeParts = _getCurrentVideoTimeParts();
+    if (!currentVideoId || !timeParts) return;
+
+    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+    if (!token) return;
+
+    const body = new URLSearchParams();
+    body.append('idVideo', currentVideoId);
+    body.append('phut', String(timeParts.phut));
+    body.append('giay', String(timeParts.giay));
+    body.append('__RequestVerificationToken', token);
+
+    fetch('/TaiLieu/GhiLichSuXemVideo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+    }).catch(() => { });
 }
 
 function _onVideoClick(e) {
@@ -736,4 +793,8 @@ window.toggleComment = function () {
 document.addEventListener('DOMContentLoaded', () => {
     initSearchFilter();
     setSearchFilter(_searchFilter);
+});
+
+window.addEventListener('beforeunload', () => {
+    _flushVideoHistory();
 });

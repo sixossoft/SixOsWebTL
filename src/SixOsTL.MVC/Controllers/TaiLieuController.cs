@@ -146,4 +146,15 @@ public class TaiLieuController : Controller
         await _service.DeleteVideoLienQuanAsync(id, ct);
         return Ok();
     }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GhiLichSuXemVideo(long idVideo, int phut, int giay, CancellationToken ct)
+    {
+        var userId = HttpContext.Session.GetUserId();
+        if (userId is null) return Unauthorized();
+
+        await _service.UpsertLichSuXemVideoAsync(idVideo, userId.Value, phut, giay, ct);
+        return Ok();
+    }
 }

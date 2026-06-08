@@ -122,6 +122,31 @@ namespace SixOsTL.Infrastructure.Services
             if (entity is not null) { entity.Active = false; await _db.SaveChangesAsync(ct); }
         }
 
+        public async Task UpsertLichSuXemVideoAsync(long idVideo, long idTaiKhoanDt, int phut, int giay, CancellationToken ct = default)
+        {
+            var entity = await _db.Set<LichSuXemVideo>()
+                .FirstOrDefaultAsync(x => x.IDVideo == idVideo && x.IDTaiKhoanDT == idTaiKhoanDt, ct);
+
+            if (entity is null)
+            {
+                entity = new LichSuXemVideo
+                {
+                    IDVideo = idVideo,
+                    IDTaiKhoanDT = idTaiKhoanDt,
+                    Phut = phut,
+                    Giay = giay
+                };
+                _db.Set<LichSuXemVideo>().Add(entity);
+            }
+            else
+            {
+                entity.Phut = phut;
+                entity.Giay = giay;
+            }
+
+            await _db.SaveChangesAsync(ct);
+        }
+
         // ── TAG-BASED: tự động build related list từ tag chung ──────────
         // gọi 1 lần khi admin muốn đồng bộ tag -> VideoLienQuan
         public async Task SyncTagBasedLienQuanAsync(long idVideo, CancellationToken ct = default)
