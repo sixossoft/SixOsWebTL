@@ -12,6 +12,7 @@ namespace SixOsTL.Infrastructure.Persistence
         public DbSet<TaiKhoanDaoTao> TaiKhoans => Set<TaiKhoanDaoTao>();
         public DbSet<DmVaiTro> VaiTros => Set<DmVaiTro>();
         public DbSet<TaiKhoanVaiTro> TaiKhoanVaiTros => Set<TaiKhoanVaiTro>();
+        public DbSet<DmVaiTroChucNang> VaiTroChucNangs => Set<DmVaiTroChucNang>();
         public DbSet<DmSanPham> SanPhams => Set<DmSanPham>();
         public DbSet<DmMucDoUuTien> MucDoUuTiens => Set<DmMucDoUuTien>();
         public DbSet<DmChucNang> ChucNangs => Set<DmChucNang>();
@@ -208,6 +209,19 @@ namespace SixOsTL.Infrastructure.Persistence
                  .WithMany()
                  .HasForeignKey(x => x.IDTaiKhoanDT)
                  .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ── DM_VaiTro_ChucNang (composite PK) ─────────────
+            modelBuilder.Entity<DmVaiTroChucNang>(e =>
+            {
+                e.ToTable("DM_VaiTro_ChucNang");
+                e.HasKey(x => new { x.IDVaiTro, x.IDChucNang });
+                e.HasOne(x => x.VaiTro)
+                 .WithMany()
+                 .HasForeignKey(x => x.IDVaiTro);
+                e.HasOne(x => x.ChucNang)
+                 .WithMany()
+                 .HasForeignKey(x => x.IDChucNang);
             });
 
         }

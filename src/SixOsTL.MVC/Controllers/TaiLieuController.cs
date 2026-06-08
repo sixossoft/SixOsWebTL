@@ -22,8 +22,19 @@ public class TaiLieuController : Controller
 
     public async Task<IActionResult> Index(CancellationToken ct)
     {
-        var chucNangs = await _db.ChucNangs
-            .Where(c => c.Active)
+        var roles = HttpContext.Session.GetRoles();
+        var isAdmin = roles.Contains("ADMIN");
+
+        var query = _db.ChucNangs.Where(c => c.Active);
+        
+        // Nếu không phải ADMIN, lọc theo bảng DM_VaiTro_ChucNang
+        if (!isAdmin)
+        {
+            query = query.Where(c => _db.VaiTroChucNangs
+                .Any(rv => rv.IDChucNang == c.Id && roles.Contains(rv.VaiTro.MaVaiTro)));
+        }
+
+        var chucNangs = await query
             .OrderBy(c => c.IDSanPham)
             .Select(c => new ChucNangDto(
                 c.Id, c.IDSanPham, c.SanPham.TenSP,
