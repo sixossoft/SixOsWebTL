@@ -18,7 +18,7 @@
         <div class="page-header">
             <div>
                 <div class="page-title"><i class="ti ti-files" style="color:#DC2626;margin-right:6px;"></i>Quản lý Tài liệu</div>
-                <div class="page-sub">Upload và quản lý file PDF, Word theo chức năng</div>
+                <div class="page-sub">Upload và quản lý file PDF theo chức năng</div>
             </div>
             <button class="btn-primary" onclick="openUploadModal()">
                 <i class="ti ti-plus"></i> Upload Tài liệu mới
@@ -63,10 +63,10 @@
                             <div class="file-drop" id="fileDropZone" onclick="document.getElementById('docFile').click()">
                                 <i class="ti ti-file-upload"></i>
                                 <p id="docFileName">Kéo thả file vào đây hoặc click để chọn</p>
-                                <div class="hint">PDF, DOC, DOCX — tối đa 50MB</div>
+                                <div class="hint">PDF — tối đa 50MB</div>
                             </div>
                             <input type="file" id="docFile" name="file"
-                                   accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                   accept=".pdf,application/pdf"
                                    style="display:none"
                                    onchange="onFileSelected(this,'docFileName','fileDropZone')" required />
                             <div class="progress-wrap" id="fileProgress">
