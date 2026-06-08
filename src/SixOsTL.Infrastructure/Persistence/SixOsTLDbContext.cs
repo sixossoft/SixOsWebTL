@@ -22,6 +22,7 @@ namespace SixOsTL.Infrastructure.Persistence
         public DbSet<TaiLieuVideoTagMap> VideoTagMaps => Set<TaiLieuVideoTagMap>();
         public DbSet<TaiLieuVideoLienQuan> VideoLienQuans => Set<TaiLieuVideoLienQuan>();
         public DbSet<LichSuXemVideo> LichSuXemVideos => Set<LichSuXemVideo>();
+        public DbSet<TaiLieuHoiDapHinhAnh> TaiLieuHoiDapHinhAnhs => Set<TaiLieuHoiDapHinhAnh>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -190,6 +191,21 @@ namespace SixOsTL.Infrastructure.Persistence
                  .IsRequired(false);
 
                 e.HasIndex(x => new { x.IDVideo, x.IDVideoLienQuan }).IsUnique();
+            });
+
+            // ── TaiLieu_HoiDap_HinhAnh ───────────────────────────────────
+            modelBuilder.Entity<TaiLieuHoiDapHinhAnh>(e =>
+            {
+                e.ToTable("TaiLieu_HoiDap_HinhAnh");
+                e.HasKey(x => x.Id);
+                e.Property(x => x.Id).HasColumnName("ID");
+                e.Property(x => x.DuongDanFileAnh).HasMaxLength(500);
+
+                e.HasOne(x => x.HoiDap)
+                 .WithMany(h => h.HinhAnhs)
+                 .HasForeignKey(x => x.IdTLHD)
+                 .HasPrincipalKey(h => h.Id)
+                 .OnDelete(DeleteBehavior.Restrict);
             });
 
             // ── LichSuXemVideo ────────────────────────────────────────────

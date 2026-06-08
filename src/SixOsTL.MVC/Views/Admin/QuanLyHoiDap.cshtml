@@ -99,12 +99,23 @@
 
                             @* Reply box *@
                             <div class="reply-box" id="replyBox-@hd.Id">
-                                <form method="post" action="/Admin/TraLoiHoiDap">
+                                <form method="post" action="/Admin/TraLoiHoiDap" enctype="multipart/form-data">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="parentId" value="@hd.Id" />
                                     <input type="hidden" name="idChucNang" value="@hd.IDChucNang" />
-                                    <textarea name="noiDung" class="reply-input"
-                                      placeholder="Nhập câu trả lời..." required></textarea>
+                                    <div class="reply-composer">
+                                        <textarea name="noiDung" class="reply-input"
+                                          placeholder="Nhập câu trả lời..." required></textarea>
+                                        <div class="composer-tools" data-upload-area="@hd.Id">
+                                            <input type="file" name="hinhAnhs" accept="image/*" multiple hidden class="image-picker" />
+                                            <button type="button" class="composer-upload-btn" data-pick-image="@hd.Id" title="Upload ảnh">
+                                                <i class="ti ti-photo-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="image-preview-list" data-preview-list="@hd.Id"></div>
+
                                     <div class="reply-actions">
                                         <button type="button" class="btn-cancel"
                                                 onclick="toggleReply(@hd.Id)">

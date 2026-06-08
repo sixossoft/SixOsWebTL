@@ -239,6 +239,7 @@ namespace SixOsTL.Infrastructure.Services
 
             var list = await query
                 .Include(h => h.TaiKhoan)
+                .Include(h => h.HinhAnhs)
                 .Include(h => h.TraLois)
                     .ThenInclude(r => r.TaiKhoan)
                 .OrderByDescending(h => h.NgayTao)
@@ -261,7 +262,27 @@ namespace SixOsTL.Infrastructure.Services
             };
             _db.HoiDaps.Add(entity);
             await _db.SaveChangesAsync(ct);
-            return MapHoiDap(entity);
+
+            if (dto.HinhAnhDuongDans is not null)
+            {
+                foreach (var path in dto.HinhAnhDuongDans.Where(p => !string.IsNullOrWhiteSpace(p)))
+                {
+                    _db.TaiLieuHoiDapHinhAnhs.Add(new TaiLieuHoiDapHinhAnh
+                    {
+                        IdTLHD = entity.Id,
+                        DuongDanFileAnh = path
+                    });
+                }
+                await _db.SaveChangesAsync(ct);
+            }
+
+            var created = await _db.HoiDaps
+                .Include(h => h.TaiKhoan)
+                .Include(h => h.HinhAnhs)
+                .Include(h => h.TraLois)
+                .FirstAsync(h => h.Id == entity.Id, ct);
+
+            return MapHoiDap(created);
         }
 
         public async Task ToggleActiveHoiDapAsync(long id, CancellationToken ct = default)
@@ -274,7 +295,8 @@ namespace SixOsTL.Infrastructure.Services
             h.Id, h.IDChucNang, h.IDTaiKhoan,
             h.TaiKhoan?.HoTen ?? h.TaiKhoan?.TenTK,
             h.NoiDung, h.CongKhai, h.ParentHoiDapID, h.NgayTao,
-            h.TraLois?.Where(r => r.Active).Select(MapHoiDap) ?? Enumerable.Empty<HoiDapDto>()
+            h.TraLois?.Where(r => r.Active).Select(MapHoiDap) ?? Enumerable.Empty<HoiDapDto>(),
+            h.HinhAnhs?.Select(x => new HoiDapHinhAnhDto(x.Id, x.IdTLHD, x.DuongDanFileAnh)) ?? Enumerable.Empty<HoiDapHinhAnhDto>()
         );
     }
 }

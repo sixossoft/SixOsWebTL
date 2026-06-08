@@ -9,6 +9,7 @@
         bool CongKhai,
         long? ParentHoiDapID,
         DateTime NgayTao,
-        IEnumerable<HoiDapDto> TraLois
+        IEnumerable<HoiDapDto> TraLois,
+        IEnumerable<HoiDapHinhAnhDto> HinhAnhs
     );
 }

@@ -63,7 +63,8 @@ namespace SixOsTL.MVC.Controllers
                 .Select(h => new HoiDapDto(h.Id, h.IDChucNang, h.IDTaiKhoan,
                     h.TaiKhoan.HoTen ?? h.TaiKhoan.TenTK,
                     h.NoiDung, h.CongKhai, null, h.NgayTao,
-                    Enumerable.Empty<HoiDapDto>()))
+                    Enumerable.Empty<HoiDapDto>(),
+                    Enumerable.Empty<HoiDapHinhAnhDto>()))
                 .ToListAsync(ct);
 
             ViewBag.RecentVideos = await _db.Videos.Where(v => v.Active)
@@ -466,19 +467,37 @@ namespace SixOsTL.MVC.Controllers
                     r.Id, r.IDChucNang, r.IDTaiKhoan,
                     r.TaiKhoan.HoTen ?? r.TaiKhoan.TenTK,
                     r.NoiDung, r.CongKhai, r.ParentHoiDapID, r.NgayTao,
-                    Enumerable.Empty<HoiDapDto>()))));
+                    Enumerable.Empty<HoiDapDto>(),
+                    Enumerable.Empty<HoiDapHinhAnhDto>())),
+                Enumerable.Empty<HoiDapHinhAnhDto>()));
 
             return View(result);
         }
 
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> TraLoiHoiDap(long parentId, long idChucNang, string noiDung, CancellationToken ct)
+        [RequestSizeLimit(100 * 1024 * 1024)]
+        public async Task<IActionResult> TraLoiHoiDap(long parentId, long idChucNang, string noiDung, List<IFormFile>? hinhAnhs, CancellationToken ct)
         {
             if (GuardAdmin() is { } r) return r;
             var userId = HttpContext.Session.GetUserId();
             if (userId is null) return Unauthorized();
 
-            await _taiLieu.CreateHoiDapAsync(new CreateHoiDapDto(idChucNang, userId.Value, noiDung, true, parentId), ct);
+            var remotePaths = new List<string>();
+            if (hinhAnhs is not null)
+            {
+                foreach (var file in hinhAnhs.Where(f => f is not null && f.Length > 0))
+                {
+                    var ext = Path.GetExtension(file.FileName);
+                    var fileName = $"{DateTime.Now:yyyyMMddHHmmssfff}_{Guid.NewGuid():N}{ext}";
+                    var remotePath = await _ftp.EnsureDirectoryAndGetPathAsync("TLSixos", "anh", fileName);
+                    await using var stream = file.OpenReadStream();
+                    var result = await _ftp.UploadAsync(stream, remotePath, ct: ct);
+                    if (!result.Success) return BadRequest(result.ErrorMessage);
+                    remotePaths.Add(result.RemotePath!);
+                }
+            }
+
+            await _taiLieu.CreateHoiDapAsync(new CreateHoiDapDto(idChucNang, userId.Value, noiDung, true, parentId, remotePaths), ct);
             return RedirectToAction(nameof(QuanLyHoiDap));
         }
 

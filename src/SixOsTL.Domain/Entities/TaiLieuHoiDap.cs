@@ -15,5 +15,6 @@
         public TaiKhoanDaoTao TaiKhoan { get; set; } = default!;
         public TaiLieuHoiDap? ParentHoiDap { get; set; }
         public ICollection<TaiLieuHoiDap> TraLois { get; set; } = new List<TaiLieuHoiDap>();
+        public ICollection<TaiLieuHoiDapHinhAnh> HinhAnhs { get; set; } = new List<TaiLieuHoiDapHinhAnh>();
     }
 }

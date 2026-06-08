@@ -160,8 +160,14 @@
         display: block
     }
 
+.reply-composer {
+    display: flex;
+    gap: 8px;
+    align-items: stretch
+}
+
 .reply-input {
-    width: 100%;
+    flex: 1;
     min-height: 80px;
     padding: 9px 10px;
     border: 1.5px solid var(--c-border);
@@ -176,6 +182,71 @@
     .reply-input:focus {
         border-color: var(--c-cyan)
     }
+
+.composer-tools {
+    display: flex;
+    align-items: flex-end
+}
+
+.composer-upload-btn {
+    width: 42px;
+    height: 42px;
+    border: 1.5px solid var(--c-border);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--c-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all .15s
+}
+
+    .composer-upload-btn:hover {
+        background: var(--c-powder);
+        border-color: var(--c-cyan)
+    }
+
+.image-preview-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px
+}
+
+.img-preview-item {
+    position: relative;
+    width: 84px;
+    height: 84px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--c-border);
+    background: var(--c-white)
+}
+
+    .img-preview-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block
+    }
+
+.img-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0,0,0,.65);
+    color: #fff;
+    cursor: pointer;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center
+}
 
 .reply-actions {
     display: flex;

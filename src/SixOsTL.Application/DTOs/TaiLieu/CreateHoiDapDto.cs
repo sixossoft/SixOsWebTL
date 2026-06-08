@@ -5,6 +5,7 @@
         long IDTaiKhoan,
         string NoiDung,
         bool CongKhai,
-        long? ParentHoiDapID
+        long? ParentHoiDapID,
+        IEnumerable<string>? HinhAnhDuongDans = null
     );
 }
