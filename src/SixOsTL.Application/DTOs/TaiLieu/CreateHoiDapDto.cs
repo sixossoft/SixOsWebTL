@@ -5,6 +5,7 @@
         long IDTaiKhoan,
         string NoiDung,
         bool CongKhai,
-        long? ParentHoiDapID
+        long? ParentHoiDapID,
+        List<string>? DanhSachAnhs = null
     );
 }

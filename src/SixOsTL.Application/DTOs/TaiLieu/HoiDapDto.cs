@@ -9,6 +9,7 @@
         bool CongKhai,
         long? ParentHoiDapID,
         DateTime NgayTao,
+        IEnumerable<string>? DanhSachAnhs,
         IEnumerable<HoiDapDto> TraLois
     );
 }

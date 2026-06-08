@@ -114,12 +114,52 @@ public class TaiLieuController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> GuiCauHoi(long idChucNang, string noiDung, bool congKhai, long? parentId, CancellationToken ct)
+    public async Task<IActionResult> GuiCauHoi(long idChucNang, string noiDung, bool congKhai, long? parentId, List<IFormFile>? images, CancellationToken ct)
     {
-        var userId = HttpContext.Session.GetUserId();
-        if (userId is null) return Unauthorized();
-        await _service.CreateHoiDapAsync(new CreateHoiDapDto(idChucNang, userId.Value, noiDung, congKhai, parentId), ct);
-        return Ok();
+        try
+        {
+            var userId = HttpContext.Session.GetUserId();
+            if (userId is null) return Unauthorized();
+
+            // Debug log
+            System.Diagnostics.Debug.WriteLine($"GuiCauHoi: idChucNang={idChucNang}, noiDung={noiDung}, images count={images?.Count}");
+
+            // Xử lý upload ảnh lên FTP nếu có
+            List<string> imagePaths = new();
+            if (images != null && images.Any())
+            {
+                foreach (var image in images.Take(5)) // Giới hạn 5 ảnh
+                {
+                    if (image.Length > 5 * 1024 * 1024) continue; // Skip files > 5MB
+
+                    var fileName = $"{Guid.NewGuid()}{Path.GetExtension(image.FileName)}";
+                    var remotePath = $"/TLSixos/anh/{fileName}";
+
+                    // Upload lên FTP
+                    var result = await _ftp.UploadAsync(image.OpenReadStream(), remotePath, overwrite: false, ct: ct);
+                    
+                    if (result.Success)
+                    {
+                        // Lấy public URL từ FTP service
+                        var publicUrl = _ftp.GetPublicUrl(remotePath);
+                        imagePaths.Add(publicUrl);
+                        System.Diagnostics.Debug.WriteLine($"GuiCauHoi: upload ảnh thành công - {publicUrl}");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"GuiCauHoi: upload ảnh thất bại - {result.ErrorMessage}");
+                    }
+                }
+            }
+
+            await _service.CreateHoiDapAsync(new CreateHoiDapDto(idChucNang, userId.Value, noiDung, congKhai, parentId, imagePaths), ct);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"GuiCauHoi Error: {ex.Message}\n{ex.StackTrace}");
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpGet]
@@ -156,5 +196,25 @@ public class TaiLieuController : Controller
 
         await _service.UpsertLichSuXemVideoAsync(idVideo, userId.Value, phut, giay, ct);
         return Ok();
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> LichSuXemVideo(CancellationToken ct)
+    {
+        var userId = HttpContext.Session.GetUserId();
+        if (userId is null) return RedirectToAction("Login", "Account");
+
+        var lichSu = await _service.GetLichSuXemVideoByUserAsync(userId.Value, ct);
+        return View(lichSu);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetLichSuXemVideo(CancellationToken ct)
+    {
+        var userId = HttpContext.Session.GetUserId();
+        if (userId is null) return Unauthorized();
+
+        var lichSu = await _service.GetLichSuXemVideoByUserAsync(userId.Value, ct);
+        return Json(lichSu);
     }
 }

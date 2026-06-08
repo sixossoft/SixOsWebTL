@@ -16,10 +16,31 @@ namespace SixOsTL.Infrastructure.Services
                 .Include(t => t.TaiKhoanVaiTros)
                     .ThenInclude(tv => tv.VaiTro)
                 .FirstOrDefaultAsync(t => t.TenTK == tenTK && !t.IsDeleted, ct);
-            if (tk is null) return null;
-            if (tk.MatKhau != matKhau) return null;       
-            if (!tk.ConHieuLuc()) return null;
+            
+            if (tk is null) 
+            {
+                System.Diagnostics.Debug.WriteLine($"[AuthService] Tài khoản '{tenTK}' không tìm thấy");
+                return null;
+            }
+            
+            if (tk.MatKhau != matKhau) 
+            {
+                System.Diagnostics.Debug.WriteLine($"[AuthService] Mật khẩu sai cho tài khoản '{tenTK}'");
+                return null;
+            }
+            
+            if (!tk.ConHieuLuc())
+            {
+                var now = DateTime.Now;
+                System.Diagnostics.Debug.WriteLine($"[AuthService] Tài khoản '{tenTK}' hết hiệu lực:");
+                System.Diagnostics.Debug.WriteLine($"  - IsDeleted: {tk.IsDeleted}");
+                System.Diagnostics.Debug.WriteLine($"  - NgayBatDau: {tk.NgayBatDau} (Hôm nay: {now})");
+                System.Diagnostics.Debug.WriteLine($"  - NgayKetThuc: {tk.NgayKetThuc}");
+                return null;
+            }
+            
             var roles = tk.TaiKhoanVaiTros.Select(tv => tv.VaiTro.MaVaiTro);
+            System.Diagnostics.Debug.WriteLine($"[AuthService] Login thành công: {tenTK}");
             return new LoginResultDto(tk.Id, tk.TenTK, tk.HoTen, tk.MaCSKCB, roles);
         }
 

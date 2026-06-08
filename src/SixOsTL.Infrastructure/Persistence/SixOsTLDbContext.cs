@@ -22,6 +22,7 @@ namespace SixOsTL.Infrastructure.Persistence
         public DbSet<TaiLieuVideoTagMap> VideoTagMaps => Set<TaiLieuVideoTagMap>();
         public DbSet<TaiLieuVideoLienQuan> VideoLienQuans => Set<TaiLieuVideoLienQuan>();
         public DbSet<LichSuXemVideo> LichSuXemVideos => Set<LichSuXemVideo>();
+        public DbSet<TaiLieuHoiDapHinhAnh> HoiDapHinhAnhs => Set<TaiLieuHoiDapHinhAnh>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -208,6 +209,21 @@ namespace SixOsTL.Infrastructure.Persistence
                  .WithMany()
                  .HasForeignKey(x => x.IDTaiKhoanDT)
                  .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ── TaiLieu_HoiDap_HinhAnh ────────────────────────────────────
+            modelBuilder.Entity<TaiLieuHoiDapHinhAnh>(e =>
+            {
+                e.ToTable("TaiLieu_HoiDap_HinhAnh");
+                e.HasKey(x => x.Id);
+                e.Property(x => x.Id).HasColumnName("Id");
+                e.Property(x => x.IdTLHD).HasColumnName("IdTLHD").IsRequired();
+                e.Property(x => x.DuongDanFileAnh).HasMaxLength(500).IsRequired();
+
+                e.HasOne(x => x.HoiDap)
+                 .WithMany()
+                 .HasForeignKey(x => x.IdTLHD)
+                 .OnDelete(DeleteBehavior.Cascade);
             });
 
         }

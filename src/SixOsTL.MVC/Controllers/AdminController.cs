@@ -63,6 +63,7 @@ namespace SixOsTL.MVC.Controllers
                 .Select(h => new HoiDapDto(h.Id, h.IDChucNang, h.IDTaiKhoan,
                     h.TaiKhoan.HoTen ?? h.TaiKhoan.TenTK,
                     h.NoiDung, h.CongKhai, null, h.NgayTao,
+                    !string.IsNullOrEmpty(h.DuongDanAnhs) ? h.DuongDanAnhs.Split(';', StringSplitOptions.RemoveEmptyEntries) : Array.Empty<string>(),
                     Enumerable.Empty<HoiDapDto>()))
                 .ToListAsync(ct);
 
@@ -452,10 +453,12 @@ namespace SixOsTL.MVC.Controllers
                 h.Id, h.IDChucNang, h.IDTaiKhoan,
                 h.TaiKhoan.HoTen ?? h.TaiKhoan.TenTK,
                 h.NoiDung, h.CongKhai, null, h.NgayTao,
+                !string.IsNullOrEmpty(h.DuongDanAnhs) ? h.DuongDanAnhs.Split(';', StringSplitOptions.RemoveEmptyEntries) : Array.Empty<string>(),
                 h.TraLois.Where(r => r.Active).Select(r => new HoiDapDto(
                     r.Id, r.IDChucNang, r.IDTaiKhoan,
                     r.TaiKhoan.HoTen ?? r.TaiKhoan.TenTK,
                     r.NoiDung, r.CongKhai, r.ParentHoiDapID, r.NgayTao,
+                    !string.IsNullOrEmpty(r.DuongDanAnhs) ? r.DuongDanAnhs.Split(';', StringSplitOptions.RemoveEmptyEntries) : Array.Empty<string>(),
                     Enumerable.Empty<HoiDapDto>()))));
 
             return View(result);
@@ -468,7 +471,7 @@ namespace SixOsTL.MVC.Controllers
             var userId = HttpContext.Session.GetUserId();
             if (userId is null) return Unauthorized();
 
-            await _taiLieu.CreateHoiDapAsync(new CreateHoiDapDto(idChucNang, userId.Value, noiDung, true, parentId), ct);
+            await _taiLieu.CreateHoiDapAsync(new CreateHoiDapDto(idChucNang, userId.Value, noiDung, true, parentId, null), ct);
             return RedirectToAction(nameof(QuanLyHoiDap));
         }
 

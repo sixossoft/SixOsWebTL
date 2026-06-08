@@ -57,6 +57,15 @@
                     <i class="ti ti-books"></i>
                 </a>
             }
+            else
+            {
+                <a class="nav-btn" href="/TaiLieu/Index" title="Xem tài liệu">
+                    <i class="ti ti-books"></i>
+                </a>
+                <a class="nav-btn" href="/TaiLieu/LichSuXemVideo" title="Lịch sử xem video">
+                    <i class="ti ti-history"></i>
+                </a>
+            }
             <div class="nav-user">
                 <div class="nav-avatar"><i class="ti ti-user"></i></div>
                 <span class="nav-uname">@_tenTK</span>
@@ -146,9 +155,18 @@
                 <div class="comment-input-wrap">
                     <textarea class="comment-input" id="commentInput"
                           placeholder="Nhập câu hỏi của bạn..." rows="3"></textarea>
-                    <button class="btn-send" onclick="submitComment()" aria-label="Gửi">
-                        <i class="ti ti-send"></i>
-                    </button>
+                    <div class="comment-actions">
+                        <input type="file" id="commentImageInput" accept="image/*" multiple style="display:none;" onchange="handleImageSelect(event)" />
+                        <button class="btn-attach" onclick="document.getElementById('commentImageInput').click()" aria-label="Đính kèm ảnh" title="Đính kèm ảnh">
+                            <i class="ti ti-photo"></i>
+                        </button>
+                        <button class="btn-send" onclick="submitComment()" aria-label="Gửi">
+                            <i class="ti ti-send"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="comment-preview" id="commentPreview" style="display:none;">
+                    <!-- Hiển thị ảnh preview -->
                 </div>
             </div>
         </aside>
@@ -161,6 +179,7 @@
         var _hoTen = "@_hoTen";
     </script>
     <script src="~/dist/js/Common.js" asp-append-version="true"></script>
+    <script src="~/dist/js/CommentImageHandler.js" asp-append-version="true"></script>
     <script src="~/dist/js/AppLayout.js" asp-append-version="true"></script>
     @RenderSection("Scripts", required: false)
 </body>

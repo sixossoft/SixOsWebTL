@@ -147,6 +147,25 @@ namespace SixOsTL.Infrastructure.Services
             await _db.SaveChangesAsync(ct);
         }
 
+        public async Task<IEnumerable<LichSuXemVideoDto>> GetLichSuXemVideoByUserAsync(long idTaiKhoanDt, CancellationToken ct = default)
+        {
+            return await _db.Set<LichSuXemVideo>()
+                .Where(x => x.IDTaiKhoanDT == idTaiKhoanDt)
+                .Include(x => x.Video)
+                .Include(x => x.TaiKhoanDaoTao)
+                .OrderByDescending(x => x.Id)
+                .Select(x => new LichSuXemVideoDto(
+                    x.Id,
+                    x.IDVideo,
+                    x.Video!.TenVideo ?? "Không rõ",
+                    x.IDTaiKhoanDT,
+                    x.TaiKhoanDaoTao!.TenTK ?? x.TaiKhoanDaoTao!.HoTen ?? "Người dùng",
+                    x.Phut,
+                    x.Giay
+                ))
+                .ToListAsync(ct);
+        }
+
         // ── TAG-BASED: tự động build related list từ tag chung ──────────
         // gọi 1 lần khi admin muốn đồng bộ tag -> VideoLienQuan
         public async Task SyncTagBasedLienQuanAsync(long idVideo, CancellationToken ct = default)
@@ -241,6 +260,11 @@ namespace SixOsTL.Infrastructure.Services
 
         public async Task<HoiDapDto> CreateHoiDapAsync(CreateHoiDapDto dto, CancellationToken ct = default)
         {
+            // Chuyển danh sách ảnh thành chuỗi phân cách bằng ';'
+            var duongDanAnhs = dto.DanhSachAnhs != null && dto.DanhSachAnhs.Any()
+                ? string.Join(";", dto.DanhSachAnhs)
+                : null;
+
             var entity = new TaiLieuHoiDap
             {
                 IDChucNang = dto.IDChucNang,
@@ -248,6 +272,7 @@ namespace SixOsTL.Infrastructure.Services
                 NoiDung = dto.NoiDung,
                 CongKhai = dto.CongKhai,
                 ParentHoiDapID = dto.ParentHoiDapID,
+                DuongDanAnhs = duongDanAnhs,
                 NgayTao = DateTime.Now,
                 Active = true
             };
@@ -262,11 +287,20 @@ namespace SixOsTL.Infrastructure.Services
             if (entity is not null) { entity.Active = !entity.Active; await _db.SaveChangesAsync(ct); }
         }
 
-        private static HoiDapDto MapHoiDap(TaiLieuHoiDap h) => new(
-            h.Id, h.IDChucNang, h.IDTaiKhoan,
-            h.TaiKhoan?.HoTen ?? h.TaiKhoan?.TenTK,
-            h.NoiDung, h.CongKhai, h.ParentHoiDapID, h.NgayTao,
-            h.TraLois?.Where(r => r.Active).Select(MapHoiDap) ?? Enumerable.Empty<HoiDapDto>()
-        );
+        private static HoiDapDto MapHoiDap(TaiLieuHoiDap h)
+        {
+            // Parse danh sách ảnh từ chuỗi
+            var danhSachAnhs = string.IsNullOrEmpty(h.DuongDanAnhs)
+                ? Array.Empty<string>()
+                : h.DuongDanAnhs.Split(';', StringSplitOptions.RemoveEmptyEntries);
+
+            return new HoiDapDto(
+                h.Id, h.IDChucNang, h.IDTaiKhoan,
+                h.TaiKhoan?.HoTen ?? h.TaiKhoan?.TenTK,
+                h.NoiDung, h.CongKhai, h.ParentHoiDapID, h.NgayTao,
+                danhSachAnhs,
+                h.TraLois?.Where(r => r.Active).Select(MapHoiDap) ?? Enumerable.Empty<HoiDapDto>()
+            );
+        }
     }
 }

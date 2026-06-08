@@ -1,0 +1,313 @@
+@using SixOsTL.Application.DTOs.TaiLieu
+@model IEnumerable<LichSuXemVideoDto>
+@{
+    ViewData["Title"] = "Lịch sử xem video";
+    Layout = "~/Views/Shared/_AppLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .lich-su-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .lich-su-header {
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .lich-su-header h1 {
+            margin: 0;
+            font-size: 28px;
+            color: var(--c-text);
+        }
+
+        .lich-su-header .btn-quay-lai {
+            padding: 8px 16px;
+            background: var(--c-primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .lich-su-header .btn-quay-lai:hover {
+            background: var(--c-primary-dark, #0056b3);
+        }
+
+        .lich-su-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--c-steel);
+        }
+
+        .lich-su-empty i {
+            font-size: 48px;
+            color: var(--c-border);
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .lich-su-empty p {
+            font-size: 16px;
+        }
+
+        .lich-su-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .lich-su-table thead {
+            background: var(--c-bg-alt, #f5f5f5);
+            border-bottom: 2px solid var(--c-border);
+        }
+
+        .lich-su-table th {
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--c-text-secondary);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .lich-su-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--c-border);
+            color: var(--c-text);
+        }
+
+        .lich-su-table tbody tr:hover {
+            background: var(--c-bg-hover, #f9f9f9);
+        }
+
+        .lich-su-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .ten-video {
+            font-weight: 500;
+            color: var(--c-primary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .ten-video:hover {
+            text-decoration: underline;
+        }
+
+        .thoi-luong {
+            font-family: 'Courier New', monospace;
+            background: var(--c-bg-code, #f5f5f5);
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .stats-box {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid var(--c-border);
+            border-radius: 4px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card i {
+            font-size: 24px;
+            color: var(--c-primary);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--c-text);
+            margin: 8px 0;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--c-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .action-cell {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action-small {
+            padding: 4px 8px;
+            font-size: 12px;
+            border: 1px solid var(--c-border);
+            background: white;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-action-small:hover {
+            background: var(--c-primary);
+            color: white;
+            border-color: var(--c-primary);
+        }
+
+        .title-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .video-icon {
+            width: 20px;
+            height: 20px;
+            background: var(--c-primary);
+            color: white;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+    </style>
+}
+
+<div class="lich-su-container">
+    <div class="lich-su-header">
+        <h1>Lịch sử xem video</h1>
+        <a href="@Url.Action("Index")" class="btn-quay-lai">← Quay lại tài liệu</a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="lich-su-empty">
+            <i class="ti ti-history"></i>
+            <p>Bạn chưa xem video nào. Hãy bắt đầu xem một video để ghi lại lịch sử.</p>
+        </div>
+    }
+    else
+    {
+        <div class="stats-box">
+            <div class="stat-card">
+                <i class="ti ti-video"></i>
+                <div class="stat-value">@Model.Count()</div>
+                <div class="stat-label">Video đã xem</div>
+            </div>
+            <div class="stat-card">
+                <i class="ti ti-clock"></i>
+                <div class="stat-value" id="totalTime">—</div>
+                <div class="stat-label">Tổng thời gian</div>
+            </div>
+        </div>
+
+        <table class="lich-su-table">
+            <thead>
+                <tr>
+                    <th style="width: 40%;">Tên video</th>
+                    <th style="width: 30%;">Thời lượng xem</th>
+                    <th style="width: 20%;">Độ tiến độ</th>
+                    <th style="width: 10%;">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.OrderByDescending(x => x.Id))
+                {
+                    var totalDurationSecs = 0; // Có thể lấy từ entity TaiLieuVideo nếu có trường thời lượng
+                    var watchedSecs = (item.Phut ?? 0) * 60 + (item.Giay ?? 0);
+                    var percentage = totalDurationSecs > 0 ? (watchedSecs * 100 / totalDurationSecs) : 0;
+
+                    <tr>
+                        <td>
+                            <div class="title-row">
+                                <div class="video-icon">
+                                    <i class="ti ti-play" style="font-size: 10px;"></i>
+                                </div>
+                                <a href="@Url.Action("Index")" class="ten-video">@item.TenVideo</a>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="thoi-luong">
+                                @($"{item.Phut:D2}:{item.Giay:D2}")
+                            </div>
+                        </td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="flex: 1; height: 8px; background: var(--c-border); border-radius: 4px; overflow: hidden;">
+                                    <div style="height: 100%; background: var(--c-primary); width: @percentage%;"></div>
+                                </div>
+                                <span style="font-size: 12px; color: var(--c-text-secondary);">@percentage%</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="action-cell">
+                                <button class="btn-action-small" title="Xem lại">
+                                    <i class="ti ti-player-play"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tính tổng thời gian
+            const lichSuData = @Html.Raw(Json.Serialize(Model.ToList()));
+            if (lichSuData && lichSuData.length > 0) {
+                let totalPhut = 0;
+                let totalGiay = 0;
+
+                lichSuData.forEach(item => {
+                    totalPhut += (item.phut || 0);
+                    totalGiay += (item.giay || 0);
+                });
+
+                // Chuyển đổi giây thành phút
+                totalPhut += Math.floor(totalGiay / 60);
+                totalGiay = totalGiay % 60;
+
+                // Chuyển đổi phút thành giờ
+                const totalGio = Math.floor(totalPhut / 60);
+                totalPhut = totalPhut % 60;
+
+                let timeDisplay = '';
+                if (totalGio > 0) {
+                    timeDisplay = totalGio + 'h ' + totalPhut + 'm';
+                } else if (totalPhut > 0) {
+                    timeDisplay = totalPhut + 'm ' + totalGiay + 's';
+                } else {
+                    timeDisplay = totalGiay + 's';
+                }
+
+                document.getElementById('totalTime').textContent = timeDisplay;
+            }
+        });
+    </script>
+}

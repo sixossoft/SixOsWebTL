@@ -10,6 +10,7 @@
         public long? ParentHoiDapID { get; set; }
         public DateTime NgayTao { get; set; }
         public bool Active { get; set; }
+        public string? DuongDanAnhs { get; set; } // JSON array hoặc chuỗi phân cách bằng ';'
 
         public DmChucNang ChucNang { get; set; } = default!;
         public TaiKhoanDaoTao TaiKhoan { get; set; } = default!;

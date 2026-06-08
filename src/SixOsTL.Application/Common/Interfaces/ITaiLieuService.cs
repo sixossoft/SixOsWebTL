@@ -13,6 +13,7 @@ namespace SixOsTL.Application.Common.Interfaces
         Task<VideoLienQuanDto> AddVideoLienQuanAsync(UpsertVideoLienQuanDto dto, CancellationToken ct = default);
         Task DeleteVideoLienQuanAsync(long id, CancellationToken ct = default);
         Task UpsertLichSuXemVideoAsync(long idVideo, long idTaiKhoanDt, int phut, int giay, CancellationToken ct = default);
+        Task<IEnumerable<LichSuXemVideoDto>> GetLichSuXemVideoByUserAsync(long idTaiKhoanDt, CancellationToken ct = default);
 
         // File
         Task<IEnumerable<FileDto>> GetFilesByChucNangAsync(long idChucNang, CancellationToken ct = default);
