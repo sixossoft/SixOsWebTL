@@ -10,7 +10,7 @@ var _lastSavedVideoTime = -1;
 // ── Autoplay countdown ────────────────────────
 var _COUNTDOWN_SEC = 7;
 var _ICON_PDF = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>`;
-var _ICON_WORD = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><line x1="8" y1="9" x2="11" y2="9"/></svg>`;
+
 
 // ── Group toggle ───────────────────────────────────────────────
 function toggleGroup(id) {
@@ -49,11 +49,7 @@ function openDoc(el) {
         badge.classList.add('badge-pdf'); badge.textContent = 'PDF';
         icon.className = '';
         icon.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
-    } else {
-        badge.classList.add('badge-word'); badge.textContent = 'Word';
-        icon.className = '';
-        icon.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`;
-    }
+    } 
     const streamUrl = '/TaiLieu/StreamFile?path=' + encodeURIComponent(path) + '&fileName=' + encodeURIComponent(name);
     document.getElementById('btnDownload').href = streamUrl;
 
@@ -211,9 +207,7 @@ function renderViewer(type, url, name) {
                 <div style="font-size:1rem;font-weight:600;color:var(--c-navy);margin-bottom:.4rem;">
                     ${name}
                 </div>
-                <p style="font-size:.83rem;color:var(--c-steel);margin-bottom:1.5rem;">
-                    Tài liệu Word không thể xem trực tiếp trên trình duyệt.
-                </p>
+               
                 <a href="${url}" download
                    style="display:inline-flex;align-items:center;gap:7px;padding:.7rem 1.75rem;
                           background:var(--c-navy);color:#fff;border-radius:var(--radius-sm);
@@ -558,7 +552,7 @@ function initSearchFilter() {
         { value: 'all', label: 'Tất cả', iconHtml: '<i class="ti ti-files"></i>' },
         { value: 'video', label: 'Video', iconHtml: '<i class="ti ti-player-play"></i>' },
         { value: 'pdf', label: 'PDF', iconHtml: _ICON_PDF },
-        { value: 'word', label: 'Word', iconHtml: _ICON_WORD },
+        
     ];
     wrap.innerHTML = `
         <div class="filter-dropdown" id="filterDropdown">
@@ -604,7 +598,7 @@ var _FILTER_META = {
     all: { label: 'Tất cả', iconHtml: '<i class="ti ti-files"></i>' },
     video: { label: 'Video', iconHtml: '<i class="ti ti-player-play"></i>' },
     pdf: { label: 'PDF', iconHtml: _ICON_PDF },
-    word: { label: 'Word', iconHtml: _ICON_WORD },
+    
 };
 
 function setSearchFilter(value) {
@@ -646,7 +640,7 @@ function handleSearch(input) {
             const t = el.dataset.type || '';
             if (_searchFilter === 'video' && t !== 'video') return false;
             if (_searchFilter === 'pdf' && t !== 'pdf') return false;
-            if (_searchFilter === 'word' && t !== 'word') return false;
+            
         }
         if (hasQuery) {
             const kw = (el.dataset.keyword || '') + ' ' + (el.dataset.name || '').toLowerCase();
