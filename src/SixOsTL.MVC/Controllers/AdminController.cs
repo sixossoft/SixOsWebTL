@@ -99,20 +99,30 @@ namespace SixOsTL.MVC.Controllers
 
         [HttpPost, ValidateAntiForgeryToken]
         [RequestSizeLimit(500 * 1024 * 1024)]
-        public async Task<IActionResult> UploadVideo(long idChucNang, IFormFile file, string tenVideo, string? keyword, string? stt, CancellationToken ct)
+        public async Task<IActionResult> UploadVideo(long idChucNang, IFormFile file, string tenVideo, string? keyword, string? stt, string? remoteFolder, CancellationToken ct)
         {
             if (GuardAdmin() is { } r) return r;
             if (file is null || file.Length == 0) return BadRequest("Chưa chọn file.");
 
             var slug = SlugHelper.ToSlug(tenVideo);
             var ext = Path.GetExtension(file.FileName);
-            var remotePath = await _ftp.EnsureDirectoryAndGetPathAsync("videos", $"cn_{idChucNang}") + $"/{slug}{ext}";
+            var targetFolder = string.IsNullOrWhiteSpace(remoteFolder) ? $"cn_{idChucNang}" : remoteFolder.Trim().Trim('/');
+            var remotePath = $"{targetFolder}/{slug}{ext}";
             await using var stream = file.OpenReadStream();
             var result = await _ftp.UploadAsync(stream, remotePath, ct: ct);
             if (!result.Success) return BadRequest(result.ErrorMessage);
 
             await _taiLieu.CreateVideoAsync(new CreateVideoDto(idChucNang, stt, tenVideo, keyword, result.RemotePath!), ct);
             return Ok();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetFtpFolders(string? path, CancellationToken ct)
+        {
+            if (GuardAdmin() is { } r) return r;
+            var currentPath = string.IsNullOrWhiteSpace(path) ? string.Empty : path.Trim().Trim('/');
+            var folders = await _ftp.ListFoldersAsync(currentPath, ct);
+            return Json(new { path = currentPath, folders });
         }
 
         [HttpPost, ValidateAntiForgeryToken]

@@ -40,6 +40,11 @@ namespace SixOsTL.Application.Common.Interfaces
         Task<bool> DirectoryExistsAsync(string remotePath, CancellationToken ct = default);
         Task<FtpResult> DeleteDirectoryAsync(string remotePath, CancellationToken ct = default);    
         Task<IEnumerable<FtpFileInfo>> ListDirectoryAsync(string remotePath, CancellationToken ct = default); // Liệt kê file/thư mục trong một thư mục
+        Task<IEnumerable<FtpFolderInfo>> ListFoldersAsync(string remotePath, CancellationToken ct = default);
+        #endregion
+
+        #region UTILITY
+        Task<bool> PathExistsAsync(string remotePath, CancellationToken ct = default);
         #endregion
 
         #region STREAMING VIDEO

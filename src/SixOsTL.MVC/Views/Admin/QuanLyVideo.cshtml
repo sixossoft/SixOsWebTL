@@ -59,6 +59,15 @@
                             <label class="form-label">Từ khóa tìm kiếm</label>
                             <input name="keyword" class="form-ctrl full" placeholder="VD: tiếp nhận, bệnh nhân, đăng ký" />
                         </div>
+                        <div class="form-group" style="margin-bottom:12px;">
+                            <label class="form-label">Thư mục lưu video</label>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <input name="remoteFolder" id="remoteFolder" class="form-ctrl full" placeholder="Chưa chọn folder..." readonly />
+                                <button type="button" class="btn-primary btn-sm" onclick="openFolderPicker()">
+                                    <i class="ti ti-folder-open"></i> Chọn
+                                </button>
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label class="form-label">File video *</label>
                             <div class="file-drop" id="videoDropZone" onclick="document.getElementById('videoFile').click()">
@@ -197,6 +206,30 @@
         </div>
         <div class="modal-foot" style="justify-content:flex-end;">
             <button class="btn-cancel" onclick="closeModal('lienQuanModal')">Đóng</button>
+        </div>
+    </div>
+</div>
+
+@* MODAL CHỌN FOLDER FTP *@
+<div class="modal-overlay" id="ftpFolderModal">
+    <div class="modal" style="max-width:720px;">
+        <div class="modal-head">
+            <span class="modal-title"><i class="ti ti-folder" style="color:var(--c-cyan);margin-right:6px;"></i>Chọn thư mục FTP</span>
+            <button class="btn-cancel" type="button" onclick="closeModal('ftpFolderModal')" style="padding:4px 8px;"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+                <button type="button" class="btn-cancel btn-sm" onclick="ftpGoRoot()"><i class="ti ti-home"></i> Root</button>
+                <button type="button" class="btn-cancel btn-sm" onclick="ftpGoUp()"><i class="ti ti-arrow-up"></i> Lên</button>
+                <div id="ftpBreadcrumb" style="font-size:.82rem;color:var(--c-steel);"></div>
+            </div>
+            <div id="ftpFolderList" style="display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto;">
+                <div style="text-align:center;padding:1.25rem;color:var(--c-steel);font-size:.85rem;">Đang tải danh sách folder...</div>
+            </div>
+        </div>
+        <div class="modal-foot" style="justify-content:space-between;">
+            <button type="button" class="btn-cancel" onclick="ftpSelectCurrentFolder()">Chọn folder này</button>
+            <button type="button" class="btn-primary" onclick="closeModal('ftpFolderModal')">Đóng</button>
         </div>
     </div>
 </div>
