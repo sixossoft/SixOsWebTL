@@ -142,6 +142,67 @@
     margin-bottom: 12px
 }
 
+.hd-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: -2px 0 12px
+}
+
+    .hd-images img {
+        width: 96px;
+        height: 96px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid var(--c-border);
+        background: var(--c-white);
+        cursor: zoom-in;
+        transition: transform .15s, box-shadow .15s
+    }
+
+        .hd-images img:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,63,125,.12)
+        }
+
+.reply-images {
+    margin: 8px 0 0
+}
+
+.hoidap-img-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 24, 48, .82);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px
+}
+
+    .hoidap-img-lightbox img {
+        max-width: min(920px, 92vw);
+        max-height: 88vh;
+        border-radius: 12px;
+        box-shadow: 0 18px 48px rgba(0,0,0,.35);
+        background: #fff
+    }
+
+.hoidap-img-lightbox-close {
+    position: fixed;
+    top: 18px;
+    right: 22px;
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,.95);
+    color: var(--c-navy);
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer
+}
+
 .hd-actions {
     display: flex;
     gap: 8px;

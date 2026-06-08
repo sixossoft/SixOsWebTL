@@ -85,6 +85,17 @@
                         <div class="hd-body">
                             <div class="hd-content">@hd.NoiDung</div>
 
+                            @if (hd.HinhAnhs.Any())
+                            {
+                                <div class="hd-images">
+                                    @foreach (var anh in hd.HinhAnhs.Where(a => !string.IsNullOrWhiteSpace(a.DuongDanFileAnh)))
+                                    {
+                                        var imgUrl = Url.Action("StreamFile", "TaiLieu", new { path = anh.DuongDanFileAnh, fileName = System.IO.Path.GetFileName(anh.DuongDanFileAnh) });
+                                        <img src="@imgUrl" alt="Ảnh câu hỏi" loading="lazy" onclick="openHoiDapImage(this.src)" />
+                                    }
+                                </div>
+                            }
+
                             @* Hiện các câu trả lời đã có *@
                             @foreach (var reply in hd.TraLois)
                             {
@@ -94,6 +105,16 @@
                                         <span class="rep-time">@reply.NgayTao.ToString("dd/MM/yyyy HH:mm")</span>
                                     </div>
                                     <div class="rep-content">@reply.NoiDung</div>
+                                    @if (reply.HinhAnhs.Any())
+                                    {
+                                        <div class="hd-images reply-images">
+                                            @foreach (var anh in reply.HinhAnhs.Where(a => !string.IsNullOrWhiteSpace(a.DuongDanFileAnh)))
+                                            {
+                                                var imgUrl = Url.Action("StreamFile", "TaiLieu", new { path = anh.DuongDanFileAnh, fileName = System.IO.Path.GetFileName(anh.DuongDanFileAnh) });
+                                                <img src="@imgUrl" alt="Ảnh trả lời" loading="lazy" onclick="openHoiDapImage(this.src)" />
+                                            }
+                                        </div>
+                                    }
                                 </div>
                             }
 

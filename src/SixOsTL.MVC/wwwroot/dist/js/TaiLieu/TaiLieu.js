@@ -1,4 +1,4 @@
-// ── State ─────────────────────────────────────────────────────
+﻿// ── State ─────────────────────────────────────────────────────
 var _activeItem = null;
 var _currentDocId = null;   // IDChucNang của doc đang mở
 var _currentVideoId = null;   // ID của video đang mở (data-id)
@@ -829,7 +829,8 @@ function loadComments(cnId) {
                             ${new Date(c.ngayTao).toLocaleDateString('vi-VN')}
                         </span>
                     </div>
-                    <div class="comment-bubble">${c.noiDung}</div>`;
+                    <div class="comment-bubble">${c.noiDung}</div>
+                    ${c.hinhAnhs && c.hinhAnhs.length > 0 ? `<div class="comment-imgs">${c.hinhAnhs.map(a => `<img src="/TaiLieu/StreamFile?path=${encodeURIComponent(a.duongDanFileAnh)}&fileName=img.jpg" alt="" onclick="_openLightbox(this.src)" />`).join("")}</div>` : ""}`;
 
                 if (c.traLois && c.traLois.length > 0) {
                     c.traLois.forEach(r => {
@@ -846,7 +847,8 @@ function loadComments(cnId) {
                                     ${new Date(r.ngayTao).toLocaleDateString('vi-VN')}
                                 </span>
                             </div>
-                            <div class="comment-bubble admin-bubble">${r.noiDung}</div>`;
+                            <div class="comment-bubble admin-bubble">${r.noiDung}</div>
+                            ${r.hinhAnhs && r.hinhAnhs.length > 0 ? `<div class="comment-imgs">${r.hinhAnhs.map(a => `<img src="/TaiLieu/StreamFile?path=${encodeURIComponent(a.duongDanFileAnh)}&fileName=img.jpg" alt="" onclick="_openLightbox(this.src)" />`).join("")}</div>` : ""}`;
                         item.appendChild(reply);
                     });
                 }
@@ -874,3 +876,112 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('beforeunload', () => {
     _flushVideoHistory();
 });
+// ── Upload ảnh hỏi đáp ─────────────────────────────────────────
+var _commentFiles = [];
+
+function onCommentImgChange(input) {
+    var newFiles = Array.from(input.files);
+    newFiles.forEach(function (f) {
+        if (!_commentFiles.find(function (x) { return x.name === f.name && x.size === f.size; })) {
+            _commentFiles.push(f);
+        }
+    });
+    input.value = '';
+    _renderImgPreview();
+}
+
+function _renderImgPreview() {
+    var wrap = document.getElementById('commentImgPreview');
+    var badge = document.getElementById('uploadBadge');
+    if (!wrap) return;
+
+    wrap.innerHTML = '';
+    _commentFiles.forEach(function (f, idx) {
+        var thumb = document.createElement('div');
+        thumb.className = 'preview-thumb';
+
+        var img = document.createElement('img');
+        img.src = URL.createObjectURL(f);
+        img.alt = f.name;
+
+        var btn = document.createElement('button');
+        btn.className = 'btn-remove-img';
+        btn.type = 'button';
+        btn.innerHTML = '<i class="ti ti-x"></i>';
+        btn.onclick = (function (i) {
+            return function () {
+                _commentFiles.splice(i, 1);
+                _renderImgPreview();
+            };
+        })(idx);
+
+        thumb.appendChild(img);
+        thumb.appendChild(btn);
+        wrap.appendChild(thumb);
+    });
+
+    if (badge) {
+        if (_commentFiles.length > 0) {
+            badge.textContent = _commentFiles.length;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+window.submitComment = function () {
+    var input = document.getElementById('commentInput');
+    var text = input ? input.value.trim() : '';
+
+    if (!text && _commentFiles.length === 0) return;
+    if (!_currentDocId) return;
+
+    var token = document.querySelector('input[name="__RequestVerificationToken"]');
+    if (!token) return;
+
+    var btn = document.querySelector('.btn-send');
+    if (btn) btn.disabled = true;
+
+    var fd = new FormData();
+    fd.append('__RequestVerificationToken', token.value);
+    fd.append('idChucNang', _currentDocId);
+    fd.append('noiDung', text || '.');
+    fd.append('congKhai', 'true');
+    _commentFiles.forEach(function (f) {
+        fd.append('hinhAnhs', f, f.name);
+    });
+
+    fetch('/TaiLieu/GuiCauHoi', {
+        method: 'POST',
+        body: fd
+    })
+    .then(function (r) {
+        if (!r.ok) throw new Error('err');
+        if (input) input.value = '';
+        _commentFiles = [];
+        _renderImgPreview();
+        loadComments(_currentDocId);
+    })
+    .catch(function () { })
+    .finally(function () {
+        if (btn) btn.disabled = false;
+    });
+};
+
+function _openLightbox(src) {
+    var overlay = document.createElement('div');
+    overlay.className = 'img-lightbox-overlay';
+    overlay.onclick = function (e) {
+        if (e.target === overlay) overlay.remove();
+    };
+    var img = document.createElement('img');
+    img.src = src;
+    var closeBtn = document.createElement('button');
+    closeBtn.className = 'lightbox-close';
+    closeBtn.innerHTML = '<i class="ti ti-x"></i>';
+    closeBtn.onclick = function () { overlay.remove(); };
+    overlay.appendChild(img);
+    overlay.appendChild(closeBtn);
+    document.body.appendChild(overlay);
+}

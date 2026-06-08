@@ -1,4 +1,4 @@
-@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @{
     var _session = HttpContextAccessor.HttpContext?.Session;
     var _tenTK = _session?.GetString("TenTK") ?? "Người dùng";
@@ -143,14 +143,23 @@
                 </div>
             </div>
             <div class="comment-foot">
+                <div class="comment-img-preview" id="commentImgPreview"></div>
                 <div class="comment-input-wrap">
                     <textarea class="comment-input" id="commentInput"
                           placeholder="Nhập câu hỏi của bạn..." rows="3"></textarea>
-                    <button class="btn-send" onclick="submitComment()" aria-label="Gửi">
-                        <i class="ti ti-send"></i>
-                    </button>
+                    <div class="comment-actions">
+                        <label class="btn-icon btn-upload-img" for="commentImgInput" title="Đính kèm ảnh" aria-label="Đính kèm ảnh">
+                            <i class="ti ti-photo"></i>
+                            <span class="upload-badge" id="uploadBadge" style="display:none;"></span>
+                        </label>
+                        <input type="file" id="commentImgInput" accept="image/*" multiple style="display:none;" onchange="onCommentImgChange(this)" />
+                        <button class="btn-send" onclick="submitComment()" aria-label="Gửi">
+                            <i class="ti ti-send"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
+
         </aside>
     }
 

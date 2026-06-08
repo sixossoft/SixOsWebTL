@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SixOsTL.Application.Common.Interfaces;
 using SixOsTL.Application.DTOs.DanhMuc;
@@ -75,6 +75,12 @@ public class TaiLieuController : Controller
         {
             ".mp4" => "video/mp4",
             ".webm" => "video/webm",
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".gif" => "image/gif",
+            ".webp" => "image/webp",
+            ".bmp" => "image/bmp",
+            ".svg" => "image/svg+xml",
             ".pdf" => "application/pdf",
             ".doc" => "application/msword",
             ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -125,11 +131,32 @@ public class TaiLieuController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> GuiCauHoi(long idChucNang, string noiDung, bool congKhai, long? parentId, CancellationToken ct)
+    [RequestSizeLimit(50 * 1024 * 1024)]
+    public async Task<IActionResult> GuiCauHoi(long idChucNang, string noiDung, bool congKhai, long? parentId,
+        List<IFormFile>? hinhAnhs, CancellationToken ct)
     {
         var userId = HttpContext.Session.GetUserId();
         if (userId is null) return Unauthorized();
-        await _service.CreateHoiDapAsync(new CreateHoiDapDto(idChucNang, userId.Value, noiDung, congKhai, parentId), ct);
+
+        var remotePaths = new List<string>();
+        if (hinhAnhs is not null)
+        {
+            foreach (var file in hinhAnhs.Where(f => f is not null && f.Length > 0))
+            {
+                var ext = Path.GetExtension(file.FileName);
+                var fileName = $"{DateTime.Now:yyyyMMddHHmmssfff}_{Guid.NewGuid():N}{ext}";
+                var remoteDir = await _ftp.EnsureDirectoryAndGetPathAsync("TLSixos", "anh");
+                var remotePath = $"{remoteDir.TrimEnd('/')}/{fileName}";
+                await using var stream = file.OpenReadStream();
+                var result = await _ftp.UploadAsync(stream, remotePath, overwrite: true, ct: ct);
+                if (!result.Success) return BadRequest(result.ErrorMessage);
+                remotePaths.Add(remotePath);
+            }
+        }
+
+        await _service.CreateHoiDapAsync(
+            new CreateHoiDapDto(idChucNang, userId.Value, noiDung, congKhai, parentId,
+                remotePaths.Count > 0 ? remotePaths : null), ct);
         return Ok();
     }
 

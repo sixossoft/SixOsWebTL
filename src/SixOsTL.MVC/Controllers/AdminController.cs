@@ -468,7 +468,9 @@ namespace SixOsTL.MVC.Controllers
             var list = await _db.HoiDaps
                 .Where(h => h.Active && h.ParentHoiDapID == null)
                 .Include(h => h.TaiKhoan)
+                .Include(h => h.HinhAnhs)
                 .Include(h => h.TraLois).ThenInclude(tr => tr.TaiKhoan)
+                .Include(h => h.TraLois).ThenInclude(tr => tr.HinhAnhs)
                 .OrderByDescending(h => h.NgayTao)
                 .ToListAsync(ct);
 
@@ -481,8 +483,8 @@ namespace SixOsTL.MVC.Controllers
                     r.TaiKhoan.HoTen ?? r.TaiKhoan.TenTK,
                     r.NoiDung, r.CongKhai, r.ParentHoiDapID, r.NgayTao,
                     Enumerable.Empty<HoiDapDto>(),
-                    Enumerable.Empty<HoiDapHinhAnhDto>())),
-                Enumerable.Empty<HoiDapHinhAnhDto>()));
+                    r.HinhAnhs.Select(a => new HoiDapHinhAnhDto(a.Id, a.IdTLHD, a.DuongDanFileAnh)))),
+                h.HinhAnhs.Select(a => new HoiDapHinhAnhDto(a.Id, a.IdTLHD, a.DuongDanFileAnh))));
 
             return View(result);
         }
@@ -502,11 +504,12 @@ namespace SixOsTL.MVC.Controllers
                 {
                     var ext = Path.GetExtension(file.FileName);
                     var fileName = $"{DateTime.Now:yyyyMMddHHmmssfff}_{Guid.NewGuid():N}{ext}";
-                    var remotePath = await _ftp.EnsureDirectoryAndGetPathAsync("TLSixos", "anh", fileName);
+                    var remoteDir = await _ftp.EnsureDirectoryAndGetPathAsync("TLSixos", "anh");
+                    var remotePath = $"{remoteDir.TrimEnd('/')}/{fileName}";
                     await using var stream = file.OpenReadStream();
-                    var result = await _ftp.UploadAsync(stream, remotePath, ct: ct);
+                    var result = await _ftp.UploadAsync(stream, remotePath, overwrite: true, ct: ct);
                     if (!result.Success) return BadRequest(result.ErrorMessage);
-                    remotePaths.Add(result.RemotePath!);
+                    remotePaths.Add(remotePath);
                 }
             }
 

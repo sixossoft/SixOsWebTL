@@ -11,11 +11,13 @@ function initHoiDapImageUpload() {
         const id = area.getAttribute('data-upload-area');
         const picker = area.querySelector('.image-picker');
         const pickBtn = area.querySelector('[data-pick-image]');
-        const previewList = area.querySelector('[data-preview-list]');
         const form = area.closest('form');
-        const dt = new DataTransfer();
+        const previewList = form?.querySelector(`[data-preview-list="${id}"]`)
+            || area.querySelector('[data-preview-list]');
 
-        pickBtn?.addEventListener('click', () => picker.click());
+        if (!picker || !pickBtn || !previewList) return;
+
+        const dt = new DataTransfer();
 
         const render = () => {
             previewList.innerHTML = '';
@@ -54,6 +56,27 @@ function initHoiDapImageUpload() {
 }
 
 document.addEventListener('DOMContentLoaded', initHoiDapImageUpload);
+
+function openHoiDapImage(src) {
+    const overlay = document.createElement('div');
+    overlay.className = 'hoidap-img-lightbox';
+    overlay.onclick = function (e) {
+        if (e.target === overlay) overlay.remove();
+    };
+
+    const img = document.createElement('img');
+    img.src = src;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'hoidap-img-lightbox-close';
+    closeBtn.innerHTML = '×';
+    closeBtn.onclick = function () { overlay.remove(); };
+
+    overlay.appendChild(img);
+    overlay.appendChild(closeBtn);
+    document.body.appendChild(overlay);
+}
 
 function filterHoiDap(status, btn) {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
