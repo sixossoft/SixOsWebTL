@@ -17,10 +17,10 @@ namespace SixOsTL.Infrastructure.Services
                     .ThenInclude(tv => tv.VaiTro)
                 .FirstOrDefaultAsync(t => t.TenTK == tenTK && !t.IsDeleted, ct);
             if (tk is null) return null;
-            if (tk.MatKhau != matKhau) return null;       
+            if (tk.MatKhau != matKhau) return null;
             if (!tk.ConHieuLuc()) return null;
             var roles = tk.TaiKhoanVaiTros.Select(tv => tv.VaiTro.MaVaiTro);
-            return new LoginResultDto(tk.Id, tk.TenTK, tk.HoTen, tk.MaCSKCB, roles);
+            return new LoginResultDto(tk.Id, tk.TenTK, tk.HoTen, tk.MaCSKCB, roles, tk.Email);
         }
 
         public async Task<bool> IsInRoleAsync(long idTaiKhoan, string maVaiTro, CancellationToken ct = default)

@@ -5,6 +5,7 @@
         string TenTK,
         string? HoTen,
         string MaCSKCB,
-        IEnumerable<string> Roles   // ["ADMIN"] hoặc ["USER"]
+        IEnumerable<string> Roles,
+        string? Email
     );
 }

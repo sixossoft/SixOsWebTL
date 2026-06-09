@@ -27,6 +27,10 @@ namespace SixOsTL.Infrastructure.Persistence
             services.Configure<FtpSettings>(configuration.GetSection(FtpSettings.SectionName));
             services.AddScoped<IFtpService, FtpService>();
 
+            // Email service
+            services.Configure<EmailSettings>(configuration.GetSection(EmailSettings.SectionName));
+            services.AddScoped<IEmailService, SmtpEmailService>();
+
             return services;
         }
     }
