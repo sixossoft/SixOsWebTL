@@ -46,6 +46,18 @@ function openEditUser(id) {
             matKhauInput.value = '';
             matKhauInput.removeAttribute('required');
             document.getElementById('matKhauHint').style.display = '';
+            
+            // Load danh sách chức năng đã chọn
+            selectedChucNangs = [];
+            if (data.chucNangs && data.chucNangs.length > 0) {
+                selectedChucNangs = data.chucNangs.map(cn => ({
+                    id: cn.id,
+                    tenSanPham: cn.tenSanPham,
+                    tenChucNang: cn.tenChucNang
+                }));
+            }
+            updateSelectedChucNangUI();
+            
             document.getElementById('userModalTitle').textContent = 'Sửa tài khoản';
             document.getElementById('btnSaveUserText').textContent = 'Lưu';
             openModal('createModal');
@@ -65,6 +77,72 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 });
 
+// Quản lý danh sách chức năng đã chọn
+let selectedChucNangs = [];
+
+function themChucNang() {
+    const select = document.getElementById('chucNangSelect');
+    const selectedOption = select.options[select.selectedIndex];
+    
+    if (!selectedOption.value) {
+        showToast('Vui lòng chọn chức năng', 400);
+        return;
+    }
+    
+    const id = parseInt(selectedOption.value);
+    const tenSanPham = selectedOption.getAttribute('data-sanpham');
+    const tenChucNang = selectedOption.text;
+    
+    // Kiểm tra đã tồn tại chưa
+    if (selectedChucNangs.some(cn => cn.id === id)) {
+        showToast('Chức năng này đã được chọn', 400);
+        return;
+    }
+    
+    // Thêm vào danh sách
+    selectedChucNangs.push({ id, tenSanPham, tenChucNang });
+    updateSelectedChucNangUI();
+    
+    // Reset dropdown
+    select.selectedIndex = 0;
+    showToast('Đã thêm chức năng', 200);
+}
+
+function xoaChucNang(id) {
+    selectedChucNangs = selectedChucNangs.filter(cn => cn.id !== id);
+    updateSelectedChucNangUI();
+    showToast('Đã xóa chức năng', 200);
+}
+
+function updateSelectedChucNangUI() {
+    const container = document.getElementById('selectedChucNangList');
+    const countSpan = document.getElementById('selectedCount');
+    const hiddenInput = document.getElementById('selectedChucNangIds');
+    
+    countSpan.textContent = selectedChucNangs.length;
+    hiddenInput.value = selectedChucNangs.map(cn => cn.id).join(',');
+    
+    if (selectedChucNangs.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state" style="text-align:center;padding:2rem;color:var(--c-steel);font-size:.8rem;">
+                <i class="ti ti-lock-open" style="display:block;font-size:24px;margin-bottom:8px;opacity:.3;"></i>
+                Chưa chọn chức năng nào
+            </div>
+        `;
+    } else {
+        container.innerHTML = selectedChucNangs.map(cn => `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius-sm);margin-bottom:6px;">
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:.82rem;font-weight:500;color:var(--c-navy);">${cn.tenChucNang}</div>
+                </div>
+                <button type="button" class="btn-danger btn-sm" onclick="xoaChucNang(${cn.id})" style="padding:4px 8px;margin-left:8px;">
+                    <i class="ti ti-x"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+}
+
 function resetUserModal() {
     document.getElementById('createModal').querySelector('form').reset();
     document.getElementById('userId').value = '0';
@@ -72,6 +150,10 @@ function resetUserModal() {
     document.getElementById('btnSaveUserText').textContent = 'Tạo tài khoản';
     document.getElementById('inputMatKhau').setAttribute('required', '');
     document.getElementById('matKhauHint').style.display = 'none';
+    
+    // Reset danh sách chức năng
+    selectedChucNangs = [];
+    updateSelectedChucNangUI();
 }
 
 function xoaTaiKhoan(id, tenTK, token) {

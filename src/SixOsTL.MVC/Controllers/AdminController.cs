@@ -374,6 +374,9 @@ namespace SixOsTL.MVC.Controllers
                     t.TaiKhoanVaiTros.Select(tv => tv.VaiTro.MaVaiTro)))
                 .ToListAsync(ct);
 
+            // Load danh sách chức năng cho dropdown
+            await LoadChucNangDropdown(ct);
+
             return View(users);
         }
 
@@ -381,7 +384,7 @@ namespace SixOsTL.MVC.Controllers
         public async Task<IActionResult> TaoTaiKhoan(
             string maCSKCB, string? hoTen, string tenTK, string matKhau,
             string? soDienThoai, string? email, string maVaiTros,
-            DateTime? ngayBatDau, DateTime? ngayKetThuc, CancellationToken ct)
+            DateTime? ngayBatDau, DateTime? ngayKetThuc, string? chucNangIds, CancellationToken ct)
         {
             if (GuardAdmin() is { } r) return r;
 
@@ -400,14 +403,35 @@ namespace SixOsTL.MVC.Controllers
             _db.TaiKhoans.Add(tk);
             await _db.SaveChangesAsync(ct);
 
+            // Thêm vai trò
             var role = await _db.VaiTros.FirstOrDefaultAsync(v => v.MaVaiTro == maVaiTros, ct);
             if (role != null)
             {
                 _db.TaiKhoanVaiTros.Add(new TaiKhoanVaiTro
                 { IDTaiKhoan = tk.Id, IDVaiTro = role.Id });
-                await _db.SaveChangesAsync(ct);
             }
-            //return RedirectToAction(nameof(QuanLyUser));
+
+            // Thêm chức năng được phân quyền
+            if (!string.IsNullOrWhiteSpace(chucNangIds))
+            {
+                var cnIds = chucNangIds.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(id => long.TryParse(id.Trim(), out var result) ? result : (long?)null)
+                    .Where(id => id.HasValue)
+                    .Select(id => id!.Value)
+                    .ToList();
+
+                foreach (var cnId in cnIds)
+                {
+                    _db.TaiKhoanChucNangs.Add(new TaiKhoanChucNang
+                    {
+                        IdTK = tk.Id,
+                        IdCN = cnId,
+                        Active = true
+                    });
+                }
+            }
+
+            await _db.SaveChangesAsync(ct);
             return Ok();
         }
 
@@ -434,7 +458,30 @@ namespace SixOsTL.MVC.Controllers
                 })
                 .FirstOrDefaultAsync(ct);
             if (tk == null) return NotFound();
-            return Json(tk);
+
+            // Lấy danh sách chức năng đã được phân quyền
+            var chucNangs = await _db.TaiKhoanChucNangs
+                .Where(tc => tc.IdTK == id && tc.Active)
+                .Include(tc => tc.ChucNang).ThenInclude(cn => cn!.SanPham)
+                .Select(tc => new {
+                    id = tc.IdCN,
+                    tenSanPham = tc.ChucNang!.SanPham.TenSP,
+                    tenChucNang = tc.ChucNang.SanPham.TenSP + " — " + tc.ChucNang.ChucNang
+                })
+                .ToListAsync(ct);
+
+            return Json(new {
+                tk.Id,
+                tk.TenTK,
+                tk.HoTen,
+                tk.MaCSKCB,
+                tk.SoDienThoai,
+                tk.Email,
+                tk.NgayBatDau,
+                tk.NgayKetThuc,
+                tk.MaVaiTro,
+                chucNangs
+            });
         }
 
         [HttpPost, ValidateAntiForgeryToken]
@@ -442,7 +489,7 @@ namespace SixOsTL.MVC.Controllers
             long id, string maCSKCB, string? hoTen, string tenTK,
             string? matKhau, string? soDienThoai, string? email,
             string maVaiTros, DateTime? ngayBatDau, DateTime? ngayKetThuc,
-            CancellationToken ct)
+            string? chucNangIds, CancellationToken ct)
         {
             if (GuardAdmin() is { } r) return r;
             var tk = await _db.TaiKhoans
@@ -466,6 +513,31 @@ namespace SixOsTL.MVC.Controllers
             if (role != null)
                 _db.TaiKhoanVaiTros.Add(new TaiKhoanVaiTro
                 { IDTaiKhoan = tk.Id, IDVaiTro = role.Id });
+
+            // Cập nhật chức năng được phân quyền - xóa cũ và thêm mới
+            var oldChucNangs = await _db.TaiKhoanChucNangs
+                .Where(tc => tc.IdTK == id)
+                .ToListAsync(ct);
+            _db.TaiKhoanChucNangs.RemoveRange(oldChucNangs);
+
+            if (!string.IsNullOrWhiteSpace(chucNangIds))
+            {
+                var cnIds = chucNangIds.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(cnId => long.TryParse(cnId.Trim(), out var result) ? result : (long?)null)
+                    .Where(cnId => cnId.HasValue)
+                    .Select(cnId => cnId!.Value)
+                    .ToList();
+
+                foreach (var cnId in cnIds)
+                {
+                    _db.TaiKhoanChucNangs.Add(new TaiKhoanChucNang
+                    {
+                        IdTK = tk.Id,
+                        IdCN = cnId,
+                        Active = true
+                    });
+                }
+            }
 
             await _db.SaveChangesAsync(ct);
             return Ok();

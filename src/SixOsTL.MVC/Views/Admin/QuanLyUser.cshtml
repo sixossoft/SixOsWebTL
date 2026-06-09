@@ -82,6 +82,46 @@
                                 <input name="ngayKetThuc" type="text" class="form-ctrl input-date" />
                             </div>
                         </div>
+
+                        @* PHẦN CHỌN CHỨC NĂNG *@
+                        <div class="form-group" style="margin-top:12px;">
+                            <label class="form-label" style="display:flex;align-items:center;gap:6px;">
+                                <i class="ti ti-shield-lock"></i>
+                                Phân quyền chức năng
+                                <span style="font-size:.72rem;color:var(--c-steel);font-weight:400;">(Tài khoản chỉ xem được các chức năng đã chọn)</span>
+                            </label>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;">
+                                @* Dropdown chọn chức năng *@
+                                <div>
+                                    <label style="font-size:.78rem;color:var(--c-steel);margin-bottom:6px;display:block;">Chọn từ danh sách</label>
+                                    <select id="chucNangSelect" class="form-ctrl ts-chucnang-picker" style="width:100%;">
+                                        <option value="">-- Chọn chức năng để thêm --</option>
+                                        @foreach (var cn in (ViewBag.ChucNangs as IEnumerable<SixOsTL.Application.DTOs.DanhMuc.ChucNangDto> ?? []))
+                                        {
+                                            <option value="@cn.Id" data-sanpham="@cn.TenSanPham">@cn.TenSanPham — @cn.ChucNang</option>
+                                        }
+                                    </select>
+                                    <button type="button" class="btn-primary btn-sm" onclick="themChucNang()" style="margin-top:8px;width:100%;">
+                                        <i class="ti ti-arrow-right"></i> Thêm chức năng
+                                    </button>
+                                </div>
+
+                                @* Danh sách chức năng đã chọn *@
+                                <div>
+                                    <label style="font-size:.78rem;color:var(--c-steel);margin-bottom:6px;display:block;">
+                                        Chức năng đã chọn (<span id="selectedCount">0</span>)
+                                    </label>
+                                    <div id="selectedChucNangList" style="border:1px solid var(--c-border);border-radius:var(--radius-sm);min-height:150px;max-height:200px;overflow-y:auto;padding:8px;background:var(--c-ice);">
+                                        <div class="empty-state" style="text-align:center;padding:2rem;color:var(--c-steel);font-size:.8rem;">
+                                            <i class="ti ti-lock-open" style="display:block;font-size:24px;margin-bottom:8px;opacity:.3;"></i>
+                                            Chưa chọn chức năng nào
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="selectedChucNangIds" name="chucNangIds" value="" />
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="modal-foot" style="padding:0;border:none;margin-top:4px;">
                             <button type="button" class="btn-cancel" onclick="closeModal('createModal')">Hủy</button>
                             <button type="button" id="btnSaveUser" class="btn-primary"
