@@ -61,7 +61,7 @@ namespace SixOsTL.MVC.Controllers
                 .OrderByDescending(h => h.NgayTao).Take(6)
                 .Select(h => new HoiDapDto(h.Id, h.IDChucNang, h.IDTaiKhoan,
                     h.TaiKhoan.HoTen ?? h.TaiKhoan.TenTK,
-                    h.NoiDung, h.CongKhai, null, h.NgayTao,
+                    h.NoiDung, h.CongKhai, h.Active, null, h.NgayTao,
                     Enumerable.Empty<HoiDapDto>(),
                     Enumerable.Empty<HoiDapHinhAnhDto>()))
                 .ToListAsync(ct);
@@ -466,7 +466,7 @@ namespace SixOsTL.MVC.Controllers
             ViewBag.PendingCount = pending;
 
             var list = await _db.HoiDaps
-                .Where(h => h.Active && h.ParentHoiDapID == null)
+                .Where(h => h.ParentHoiDapID == null) // Lấy cả Active = true và false
                 .Include(h => h.TaiKhoan)
                 .Include(h => h.HinhAnhs)
                 .Include(h => h.TraLois).ThenInclude(tr => tr.TaiKhoan)
@@ -477,11 +477,11 @@ namespace SixOsTL.MVC.Controllers
             var result = list.Select(h => new HoiDapDto(
                 h.Id, h.IDChucNang, h.IDTaiKhoan,
                 h.TaiKhoan.HoTen ?? h.TaiKhoan.TenTK,
-                h.NoiDung, h.CongKhai, null, h.NgayTao,
+                h.NoiDung, h.CongKhai, h.Active, h.ParentHoiDapID, h.NgayTao,
                 h.TraLois.Where(r => r.Active).Select(r => new HoiDapDto(
                     r.Id, r.IDChucNang, r.IDTaiKhoan,
                     r.TaiKhoan.HoTen ?? r.TaiKhoan.TenTK,
-                    r.NoiDung, r.CongKhai, r.ParentHoiDapID, r.NgayTao,
+                    r.NoiDung, r.CongKhai, r.Active, r.ParentHoiDapID, r.NgayTao,
                     Enumerable.Empty<HoiDapDto>(),
                     r.HinhAnhs.Select(a => new HoiDapHinhAnhDto(a.Id, a.IdTLHD, a.DuongDanFileAnh)))),
                 h.HinhAnhs.Select(a => new HoiDapHinhAnhDto(a.Id, a.IdTLHD, a.DuongDanFileAnh))));

@@ -7,6 +7,7 @@
         string? TenNguoiHoi,
         string NoiDung,
         bool CongKhai,
+        bool Active,
         long? ParentHoiDapID,
         DateTime NgayTao,
         IEnumerable<HoiDapDto> TraLois,

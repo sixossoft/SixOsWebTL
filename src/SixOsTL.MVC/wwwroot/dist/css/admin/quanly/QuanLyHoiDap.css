@@ -49,6 +49,15 @@
         border-left: 3px solid var(--c-success)
     }
 
+    .hoidap-card.hidden-msg {
+        background: #fff8f0;
+        border-left: 3px solid #f59e0b;
+    }
+
+    .hoidap-card.hidden-msg .hd-head {
+        background: #fffaf0;
+    }
+
 .hd-head {
     padding: 12px 16px;
     display: flex;
@@ -125,6 +134,15 @@
 .badge-private {
     background: var(--c-danger-bg);
     color: var(--c-danger);
+    font-size: .68rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 100px
+}
+
+.badge-hidden {
+    background: #fff8dc;
+    color: #b45309;
     font-size: .68rem;
     font-weight: 600;
     padding: 2px 8px;

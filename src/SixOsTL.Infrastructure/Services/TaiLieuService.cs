@@ -242,6 +242,8 @@ namespace SixOsTL.Infrastructure.Services
                 .Include(h => h.HinhAnhs)
                 .Include(h => h.TraLois)
                     .ThenInclude(r => r.TaiKhoan)
+                .Include(h => h.TraLois)
+                    .ThenInclude(r => r.HinhAnhs)
                 .OrderByDescending(h => h.NgayTao)
                 .ToListAsync(ct);
 
@@ -294,7 +296,7 @@ namespace SixOsTL.Infrastructure.Services
         private static HoiDapDto MapHoiDap(TaiLieuHoiDap h) => new(
             h.Id, h.IDChucNang, h.IDTaiKhoan,
             h.TaiKhoan?.HoTen ?? h.TaiKhoan?.TenTK,
-            h.NoiDung, h.CongKhai, h.ParentHoiDapID, h.NgayTao,
+            h.NoiDung, h.CongKhai, h.Active, h.ParentHoiDapID, h.NgayTao,
             h.TraLois?.Where(r => r.Active).Select(MapHoiDap) ?? Enumerable.Empty<HoiDapDto>(),
             h.HinhAnhs?.Select(x => new HoiDapHinhAnhDto(x.Id, x.IdTLHD, x.DuongDanFileAnh)) ?? Enumerable.Empty<HoiDapHinhAnhDto>()
         );

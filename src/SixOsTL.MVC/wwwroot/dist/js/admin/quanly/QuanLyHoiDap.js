@@ -93,6 +93,38 @@ function searchHoiDap(q) {
     });
 }
 
+let showHiddenMessages = false;
+
+function toggleHiddenMessages(btn) {
+    showHiddenMessages = !showHiddenMessages;
+    const icon = btn.querySelector('i');
+    
+    if (showHiddenMessages) {
+        // Hiện tất cả tin nhắn ẩn
+        document.querySelectorAll('.hoidap-card[data-hidden="true"]').forEach(card => {
+            card.style.display = '';
+        });
+        btn.classList.add('active');
+        icon.className = 'ti ti-eye';
+        btn.innerHTML = '<i class="ti ti-eye" style="font-size:12px;"></i> Ẩn tin ẩn';
+    } else {
+        // Ẩn lại tin nhắn ẩn
+        document.querySelectorAll('.hoidap-card[data-hidden="true"]').forEach(card => {
+            card.style.display = 'none';
+        });
+        btn.classList.remove('active');
+        icon.className = 'ti ti-eye-off';
+        btn.innerHTML = '<i class="ti ti-eye-off" style="font-size:12px;"></i> Hiện tin ẩn';
+    }
+}
+
+// Ẩn tin nhắn ẩn khi load trang
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.hoidap-card[data-hidden="true"]').forEach(card => {
+        card.style.display = 'none';
+    });
+});
+
 function anHoiDap(id, idChucNang, token) {
     showModalWarningYN(
         'Ẩn câu hỏi này khỏi danh sách hiển thị với người dùng?',

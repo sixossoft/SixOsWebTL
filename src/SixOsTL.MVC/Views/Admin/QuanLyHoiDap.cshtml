@@ -33,6 +33,10 @@
                 <i class="ti ti-check" style="font-size:12px;"></i>
                 Đã trả lời (@Model.Count(h => h.TraLois.Any()))
             </button>
+            <button class="filter-btn" onclick="toggleHiddenMessages(this)" id="btnToggleHidden">
+                <i class="ti ti-eye-off" style="font-size:12px;"></i>
+                Hiện tin ẩn (@Model.Count(h => !h.Active))
+            </button>
             <div class="search-bar-wrap">
                 <i class="ti ti-search"></i>
                 <input type="text" placeholder="Tìm nội dung..." oninput="searchHoiDap(this.value)" />
@@ -53,8 +57,9 @@
                 {
                     var hasReply = hd.TraLois.Any();
                     var isHighlight = highlightId == hd.Id;
-                    <div class="hoidap-card @(hasReply ? "answered" : "pending") @(isHighlight ? "highlight" : "")"
+                    <div class="hoidap-card @(hasReply ? "answered" : "pending") @(!hd.Active ? "hidden-msg" : "") @(isHighlight ? "highlight" : "")"
                          data-status="@(hasReply ? "answered" : "pending")"
+                         data-hidden="@(!hd.Active ? "true" : "false")"
                          data-content="@hd.NoiDung?.ToLower()"
                          id="hd-@hd.Id">
                         <div class="hd-head">
@@ -64,6 +69,10 @@
                                 <div class="hd-info">
                                     <span class="hd-time">@hd.NgayTao.ToString("dd/MM/yyyy HH:mm")</span>
                                     <span class="hd-cn">CN #@hd.IDChucNang</span>
+                                    @if (!hd.Active)
+                                    {
+                                        <span class="badge-hidden"><i class="ti ti-eye-off" style="font-size:10px;"></i> Đã ẩn</span>
+                                    }
                                     @if (!hd.CongKhai)
                                     {
                                         <span class="badge-private"><i class="ti ti-lock" style="font-size:10px;"></i> Riêng tư</span>
@@ -159,7 +168,7 @@
                                 }
                                 <button class="btn-primary btn-sm btn-danger"
                                         onclick="anHoiDap(@hd.Id, @hd.IDChucNang, '@_token')">
-                                    <i class="ti ti-eye-off"></i> Ẩn
+                                    <i class="ti ti-eye-off"></i> @(hd.Active ? "Ẩn" : "Hiện")
                                 </button>
                             </div>
                         </div>
