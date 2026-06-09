@@ -1,0 +1,40 @@
+﻿@{
+    ViewData["Title"] = "Xác thực OTP";
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
+}
+
+<div class="auth-right">
+    <div class="auth-card">
+        <div class="card-head">
+            <div class="card-title">Xác thực bằng mã OTP</div>
+            <div class="card-sub">Nhập mã 6 chữ số được gửi tới email của bạn</div>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert-error">
+                <span>@ViewBag.Error</span>
+            </div>
+        }
+
+        <form method="post" action="/Account/VerifyOtp">
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                <label class="form-label" for="code">Mã OTP</label>
+                <input class="form-control" type="text" id="code" name="code" maxlength="6" placeholder="Nhập mã 6 chữ số" required />
+            </div>
+            <button type="submit" class="btn-submit">
+                Xác thực
+            </button>
+        </form>
+
+        <form method="post" action="/Account/ResendOtp" style="margin-top:12px;">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn-link">Gửi lại mã (resend)</button>
+        </form>
+
+        <div class="card-foot">
+            <a href="/Account/Login">Quay lại đăng nhập</a>
+        </div>
+    </div>
+</div>
