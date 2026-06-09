@@ -2,10 +2,9 @@
 @using SixOsTL.Application.DTOs.TaiLieu
 @model IEnumerable<HoiDapDto>
 @{
-    ViewData["Title"] = "Quản lý Hỏi đáp";
+    ViewData["Title"] = "Danh sách tin nhắn đã ẩn";
     ViewData["ActiveMenu"] = "hoidap";
     Layout = "~/Views/Shared/_AppLayout.cshtml";
-    var highlightId = ViewBag.HighlightId as long?;
 }
 @section Styles {
     <link href="~/dist/css/admin/quanly/QuanLyHoiDap.css" rel="stylesheet" asp-append-version="true" />
@@ -16,27 +15,24 @@
 
         <div class="page-header">
             <div>
-                <div class="page-title"><i class="ti ti-messages" style="color:var(--c-warn);margin-right:6px;"></i>Quản lý Hỏi đáp</div>
-                <div class="page-sub">Phản hồi câu hỏi từ người dùng, ẩn/hiện nội dung không phù hợp</div>
+                <div class="page-title">
+                    <i class="ti ti-eye-off" style="color:#b45309;margin-right:6px;"></i>
+                    Danh sách tin nhắn đã ẩn
+                </div>
+                <div class="page-sub">Các tin nhắn đã bị ẩn bởi Admin (Active = 0)</div>
             </div>
+            <a href="/Admin/QuanLyHoiDap" class="btn-primary btn-sm">
+                <i class="ti ti-arrow-left"></i> Quay lại
+            </a>
         </div>
 
         <div class="filter-bar">
-            <button class="filter-btn active" onclick="filterHoiDap('all',this)">
-                Tất cả (@Model.Count())
-            </button>
-            <button class="filter-btn" onclick="filterHoiDap('pending',this)">
-                <i class="ti ti-clock" style="font-size:12px;"></i>
-                Chờ phản hồi (@Model.Count(h => !h.TraLois.Any()))
-            </button>
-            <button class="filter-btn" onclick="filterHoiDap('answered',this)">
-                <i class="ti ti-check" style="font-size:12px;"></i>
-                Đã trả lời (@Model.Count(h => h.TraLois.Any()))
-            </button>
-            <a href="/Admin/DanhSachTinAn" class="filter-btn" style="text-decoration:none;">
-                <i class="ti ti-eye-off" style="font-size:12px;"></i>
-                Xem tin ẩn (@Model.Count(h => !h.Active))
-            </a>
+            <div style="flex:1;display:flex;align-items:center;gap:8px;">
+                <i class="ti ti-info-circle" style="color:var(--c-warn);"></i>
+                <span style="font-size:.8rem;color:var(--c-steel);">
+                    Tổng cộng: <strong>@Model.Count()</strong> tin nhắn đã ẩn
+                </span>
+            </div>
             <div class="search-bar-wrap">
                 <i class="ti ti-search"></i>
                 <input type="text" placeholder="Tìm nội dung..." oninput="searchHoiDap(this.value)" />
@@ -46,8 +42,8 @@
         @if (!Model.Any())
         {
             <div class="empty-state">
-                <i class="ti ti-messages"></i>
-                <div>Chưa có câu hỏi nào.</div>
+                <i class="ti ti-mood-smile"></i>
+                <div>Không có tin nhắn nào bị ẩn.</div>
             </div>
         }
         else
@@ -56,9 +52,7 @@
                 @foreach (var hd in Model.OrderByDescending(h => h.NgayTao))
                 {
                     var hasReply = hd.TraLois.Any();
-                    var isHighlight = highlightId == hd.Id;
-                    <div class="hoidap-card @(hasReply ? "answered" : "pending") @(isHighlight ? "highlight" : "")"
-                         data-status="@(hasReply ? "answered" : "pending")"
+                    <div class="hoidap-card hidden-msg @(hasReply ? "answered" : "pending")"
                          data-content="@hd.NoiDung?.ToLower()"
                          id="hd-@hd.Id">
                         <div class="hd-head">
@@ -68,6 +62,7 @@
                                 <div class="hd-info">
                                     <span class="hd-time">@hd.NgayTao.ToString("dd/MM/yyyy HH:mm")</span>
                                     <span class="hd-cn">CN #@hd.IDChucNang</span>
+                                    <span class="badge-hidden"><i class="ti ti-eye-off" style="font-size:10px;"></i> Đã ẩn</span>
                                     @if (!hd.CongKhai)
                                     {
                                         <span class="badge-private"><i class="ti ti-lock" style="font-size:10px;"></i> Riêng tư</span>
@@ -100,7 +95,7 @@
                                 </div>
                             }
 
-                            @* Hiện các câu trả lời đã có *@
+                            @* Hiện các câu trả lời *@
                             @foreach (var reply in hd.TraLois)
                             {
                                 <div class="reply-item">
@@ -122,48 +117,13 @@
                                 </div>
                             }
 
-                            @* Reply box *@
-                            <div class="reply-box" id="replyBox-@hd.Id">
-                                <form method="post" action="/Admin/TraLoiHoiDap" enctype="multipart/form-data">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="parentId" value="@hd.Id" />
-                                    <input type="hidden" name="idChucNang" value="@hd.IDChucNang" />
-                                    <div class="reply-composer">
-                                        <textarea name="noiDung" class="reply-input"
-                                          placeholder="Nhập câu trả lời..." required></textarea>
-                                        <div class="composer-tools" data-upload-area="@hd.Id">
-                                            <input type="file" name="hinhAnhs" accept="image/*" multiple hidden class="image-picker" />
-                                            <button type="button" class="composer-upload-btn" data-pick-image="@hd.Id" title="Upload ảnh">
-                                                <i class="ti ti-photo-plus"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div class="image-preview-list" data-preview-list="@hd.Id"></div>
-
-                                    <div class="reply-actions">
-                                        <button type="button" class="btn-cancel"
-                                                onclick="toggleReply(@hd.Id)">
-                                            Hủy
-                                        </button>
-                                        <button type="submit" class="btn-primary btn-sm">
-                                            <i class="ti ti-send"></i> Gửi trả lời
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <div class="hd-actions">
-                                <button class="btn-primary btn-sm btn-success" onclick="toggleReply(@hd.Id)">
-                                    <i class="ti ti-arrow-forward-up"></i>
-                                    @(hasReply ? "Trả lời thêm" : "Trả lời")
-                                </button>
+                            <div class="hd-actions" style="margin-top:12px;">
                                 @{
                                     var _token = Antiforgery.GetAndStoreTokens(Context).RequestToken;
                                 }
-                                <button class="btn-primary btn-sm btn-danger"
-                                        onclick="anHoiDap(@hd.Id, @hd.IDChucNang, '@_token')">
-                                    <i class="ti ti-eye-off"></i> @(hd.Active ? "Ẩn" : "Hiện")
+                                <button class="btn-primary btn-sm btn-success"
+                                        onclick="hienHoiDap(@hd.Id, @hd.IDChucNang, '@_token')">
+                                    <i class="ti ti-eye"></i> Hiện lại
                                 </button>
                             </div>
                         </div>
@@ -177,13 +137,39 @@
 
 @section Scripts {
     <script src="~/dist/js/admin/quanly/QuanLyHoiDap.js" asp-append-version="true"></script>
-    @if (highlightId.HasValue)
-    {
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const el = document.getElementById('hd-@highlightId');
-                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    <script>
+        function searchHoiDap(q) {
+            q = q.toLowerCase();
+            document.querySelectorAll('.hoidap-card').forEach(card => {
+                card.style.display = (!q || card.dataset.content.includes(q)) ? '' : 'none';
             });
-        </script>
-    }
+        }
+
+        function hienHoiDap(id, idChucNang, token) {
+            showModalWarningYN(
+                'Hiện lại tin nhắn này?',
+                () => {
+                    const body = new URLSearchParams();
+                    body.append('id', id);
+                    body.append('idChucNang', idChucNang);
+                    body.append('__RequestVerificationToken', token);
+
+                    fetch('/Admin/ToggleHoiDap', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: body.toString()
+                    })
+                        .then(r => {
+                            if (r.ok || r.status === 302) {
+                                showToast('Đã hiện lại tin nhắn!', 200);
+                                setTimeout(() => location.reload(), 800);
+                            } else {
+                                showToast('Thao tác thất bại.', 500);
+                            }
+                        })
+                        .catch(() => showToast('Lỗi kết nối.', 500));
+                }
+            );
+        }
+    </script>
 }

@@ -466,7 +466,36 @@ namespace SixOsTL.MVC.Controllers
             ViewBag.PendingCount = pending;
 
             var list = await _db.HoiDaps
-                .Where(h => h.ParentHoiDapID == null) // Lấy cả Active = true và false
+                .Where(h => h.Active && h.ParentHoiDapID == null) // Chỉ lấy Active = true
+                .Include(h => h.TaiKhoan)
+                .Include(h => h.HinhAnhs)
+                .Include(h => h.TraLois).ThenInclude(tr => tr.TaiKhoan)
+                .Include(h => h.TraLois).ThenInclude(tr => tr.HinhAnhs)
+                .OrderByDescending(h => h.NgayTao)
+                .ToListAsync(ct);
+
+            var result = list.Select(h => new HoiDapDto(
+                h.Id, h.IDChucNang, h.IDTaiKhoan,
+                h.TaiKhoan.HoTen ?? h.TaiKhoan.TenTK,
+                h.NoiDung, h.CongKhai, h.Active, h.ParentHoiDapID, h.NgayTao,
+                h.TraLois.Where(r => r.Active).Select(r => new HoiDapDto(
+                    r.Id, r.IDChucNang, r.IDTaiKhoan,
+                    r.TaiKhoan.HoTen ?? r.TaiKhoan.TenTK,
+                    r.NoiDung, r.CongKhai, r.Active, r.ParentHoiDapID, r.NgayTao,
+                    Enumerable.Empty<HoiDapDto>(),
+                    r.HinhAnhs.Select(a => new HoiDapHinhAnhDto(a.Id, a.IdTLHD, a.DuongDanFileAnh)))),
+                h.HinhAnhs.Select(a => new HoiDapHinhAnhDto(a.Id, a.IdTLHD, a.DuongDanFileAnh))));
+
+            return View(result);
+        }
+
+        public async Task<IActionResult> DanhSachTinAn(CancellationToken ct)
+        {
+            if (GuardAdmin() is { } r) return r;
+            ViewData["ActiveMenu"] = "hoidap";
+
+            var list = await _db.HoiDaps
+                .Where(h => !h.Active && h.ParentHoiDapID == null) // Chỉ lấy Active = false
                 .Include(h => h.TaiKhoan)
                 .Include(h => h.HinhAnhs)
                 .Include(h => h.TraLois).ThenInclude(tr => tr.TaiKhoan)
