@@ -1,0 +1,388 @@
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    ViewData["Title"] = "Thống kê xem video";
+    ViewData["ActiveMenu"] = "thongke";
+    Layout = "~/Views/Shared/_AppLayout.cshtml";
+    var _token = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+}
+
+<input type="hidden" name="__RequestVerificationToken" value="@_token" />
+
+@section Styles {
+    <style>
+        .stat-card {
+            background: var(--c-white);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--c-navy);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--c-border);
+        }
+        .stat-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .stat-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: .75rem;
+            font-weight: 600;
+            color: var(--c-steel);
+            text-transform: uppercase;
+            letter-spacing: .03em;
+            background: var(--c-ice);
+            border-bottom: 1px solid var(--c-border);
+        }
+        .stat-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--c-powder);
+        }
+        .stat-table tbody tr:hover {
+            background: var(--c-ice);
+        }
+        .rank-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: .85rem;
+            margin: 0 auto;
+        }
+        .rank-1 { background: #FEF3C7; color: #D97706; }
+        .rank-2 { background: #E0E7FF; color: #4F46E5; }
+        .rank-3 { background: #FECDD3; color: #DC2626; }
+        .rank-other { background: var(--c-ice); color: var(--c-steel); }
+    </style>
+}
+
+<div class="app-main">
+    <div class="app-main-body">
+
+        @* DANH SÁCH NGƯỜI XEM VIDEO *@
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <i class="ti ti-users" style="color:var(--c-cyan);font-size:20px;"></i>
+                Danh sách người đã xem video
+            </div>
+            
+            @{
+                var nguoiXemList = ViewBag.NguoiXemList as IEnumerable<dynamic>;
+            }
+            @if (nguoiXemList == null || !nguoiXemList.Any())
+            {
+                <div style="text-align:center;padding:3rem;color:var(--c-steel);">
+                    <i class="ti ti-user-off" style="font-size:48px;display:block;margin-bottom:1rem;opacity:.3;"></i>
+                    <div style="font-size:.95rem;font-weight:500;">Chưa có dữ liệu lịch sử xem video</div>
+                    <div style="font-size:.82rem;margin-top:8px;">Dữ liệu sẽ hiển thị khi người dùng bắt đầu xem video</div>
+                </div>
+            }
+            else
+            {
+                @* THANH TÌM KIẾM *@
+                <div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+                    <div style="flex:1;position:relative;">
+                        <input type="text" 
+                               id="searchInput" 
+                               class="form-ctrl" 
+                               placeholder="Tìm kiếm theo tên người dùng..."
+                               onkeyup="filterTable()"
+                               style="padding-left:40px;height:40px;font-size:.88rem;border:1px solid var(--c-border);border-radius:var(--radius);">
+                        <i class="ti ti-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--c-steel);"></i>
+                    </div>
+                </div>
+
+                <table class="stat-table" id="userTable">
+                    <thead>
+                        <tr>
+                            <th style="width:60px;text-align:center;">STT</th>
+                            <th>Tên người xem</th>
+                            <th style="width:180px;text-align:center;">Số video đã xem</th>
+                            <th style="width:180px;text-align:center;">Tổng lượt xem</th>
+                            <th style="width:180px;text-align:center;">Tổng TG (phút)</th>
+                            <th style="width:120px;text-align:center;">Chi tiết</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int stt = 1;
+                        }
+                        @foreach (var nguoi in nguoiXemList)
+                        {
+                            var tongPhut = Math.Round((double)nguoi.TongThoiGian / 60, 1);
+                            
+                            <tr data-name="@nguoi.TenNguoiXem" data-id="@nguoi.IdTaiKhoan">
+                                <td style="text-align:center;">
+                                    <span style="font-weight:600;color:var(--c-steel);">@stt</span>
+                                </td>
+                                <td>
+                                    <div style="display:flex;align-items:center;gap:10px;">
+                                        <div style="width:36px;height:36px;border-radius:50%;background:var(--c-powder);display:flex;align-items:center;justify-content:center;">
+                                            <i class="ti ti-user" style="color:var(--c-primary);font-size:16px;"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-weight:500;font-size:.88rem;color:var(--c-navy);">@nguoi.TenNguoiXem</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="text-align:center;">
+                                    <div style="display:inline-flex;align-items:center;gap:6px;background:var(--c-powder);padding:6px 12px;border-radius:100px;">
+                                        <i class="ti ti-video" style="font-size:14px;color:var(--c-cyan);"></i>
+                                        <span style="font-weight:600;font-size:.88rem;color:var(--c-navy);">@nguoi.SoVideoXem</span>
+                                    </div>
+                                </td>
+                                <td style="text-align:center;">
+                                    <div style="display:inline-flex;align-items:center;gap:6px;background:var(--c-success-bg);padding:6px 12px;border-radius:100px;">
+                                        <i class="ti ti-eye" style="font-size:14px;color:var(--c-success);"></i>
+                                        <span style="font-weight:600;font-size:.88rem;color:var(--c-navy);">@nguoi.TongLuotXem</span>
+                                    </div>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span style="font-weight:500;font-size:.88rem;color:var(--c-steel);">@tongPhut phút</span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <button class="btn-primary btn-sm" 
+                                            style="padding:6px 12px;font-size:.78rem;"
+                                            onclick="openUserVideoModal(@nguoi.IdTaiKhoan, '@Html.Raw(nguoi.TenNguoiXem?.ToString()?.Replace("'", "\\'"))')">
+                                        <i class="ti ti-list"></i> Xem
+                                    </button>
+                                </td>
+                            </tr>
+                            stt++;
+                        }
+                    </tbody>
+                </table>
+                
+                <div id="noResults" style="display:none;text-align:center;padding:2rem;color:var(--c-steel);">
+                    <i class="ti ti-search-off" style="font-size:36px;display:block;margin-bottom:.5rem;opacity:.3;"></i>
+                    <div style="font-size:.88rem;">Không tìm thấy người dùng nào</div>
+                </div>
+            }
+        </div>
+
+    </div>
+</div>
+
+@* MODAL LỊCH SỬ VIDEO CỦA NGƯỜI DÙNG *@
+<div class="modal-overlay" id="userVideoModal">
+    <div class="modal" style="max-width:800px;">
+        <div class="modal-head">
+            <span class="modal-title">
+                <i class="ti ti-video" style="color:var(--c-cyan);margin-right:6px;"></i>
+                Lịch sử xem video — <span id="userName" style="font-weight:400;color:var(--c-steel);"></span>
+            </span>
+            <button class="btn-cancel" onclick="closeModal('userVideoModal')" style="padding:4px 8px;">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <div class="modal-body" style="min-height:300px;">
+            <div id="userVideoStats" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
+                <div style="background:var(--c-ice);padding:12px;border-radius:var(--radius-sm);border:1px solid var(--c-border);">
+                    <div style="font-size:.72rem;color:var(--c-steel);margin-bottom:4px;">Tổng lượt xem</div>
+                    <div style="font-size:1.4rem;font-weight:700;color:var(--c-navy);" id="userTotalViews">0</div>
+                </div>
+                <div style="background:var(--c-ice);padding:12px;border-radius:var(--radius-sm);border:1px solid var(--c-border);">
+                    <div style="font-size:.72rem;color:var(--c-steel);margin-bottom:4px;">Số video đã xem</div>
+                    <div style="font-size:1.4rem;font-weight:700;color:var(--c-navy);" id="userUniqueVideos">0</div>
+                </div>
+                <div style="background:var(--c-ice);padding:12px;border-radius:var(--radius-sm);border:1px solid var(--c-border);">
+                    <div style="font-size:.72rem;color:var(--c-steel);margin-bottom:4px;">Tổng thời gian</div>
+                    <div style="font-size:1.4rem;font-weight:700;color:var(--c-navy);" id="userTotalTime">0 phút</div>
+                </div>
+            </div>
+            
+            <div style="font-size:.82rem;font-weight:600;color:var(--c-navy);margin-bottom:10px;">
+                Danh sách video đã xem
+            </div>
+            
+            <div id="userVideoList" style="max-height:450px;overflow-y:auto;">
+                <div class="viewer-loading" style="text-align:center;padding:2rem;color:var(--c-steel);">
+                    <i class="ti ti-loader" style="font-size:24px;animation:spin 1s linear infinite;"></i>
+                    <div style="margin-top:8px;">Đang tải...</div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-foot" style="justify-content:space-between;">
+            <button class="btn-primary btn-danger" onclick="deleteUserHistory()" id="btnDeleteUser">
+                <i class="ti ti-trash"></i> Xóa lịch sử người này
+            </button>
+            <button class="btn-cancel" onclick="closeModal('userVideoModal')">Đóng</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentUserId = null;
+        let currentUserName = '';
+        
+        // Hàm tìm kiếm người dùng
+        function filterTable() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase().trim();
+            const table = document.getElementById('userTable');
+            const tbody = table.getElementsByTagName('tbody')[0];
+            const rows = tbody.getElementsByTagName('tr');
+            const noResults = document.getElementById('noResults');
+            
+            let visibleCount = 0;
+            
+            for (let i = 0; i < rows.length; i++) {
+                const name = rows[i].getAttribute('data-name');
+                if (name && name.toLowerCase().includes(filter)) {
+                    rows[i].style.display = '';
+                    visibleCount++;
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+            
+            // Hiển thị thông báo nếu không tìm thấy
+            if (visibleCount === 0) {
+                table.style.display = 'none';
+                noResults.style.display = 'block';
+            } else {
+                table.style.display = 'table';
+                noResults.style.display = 'none';
+            }
+        }
+
+        function openUserVideoModal(idTaiKhoan, tenNguoi) {
+            currentUserId = idTaiKhoan;
+            currentUserName = tenNguoi;
+            document.getElementById('userName').textContent = tenNguoi;
+            document.getElementById('userVideoModal').classList.add('open');
+            loadUserVideoHistory(idTaiKhoan);
+        }
+
+        // Xóa lịch sử người dùng hiện tại
+        async function deleteUserHistory() {
+            if (!currentUserId) return;
+            
+            if (!confirm(`Bạn có chắc muốn xóa TẤT CẢ lịch sử xem video của "${currentUserName}"?\n\nLưu ý: Thao tác này KHÔNG THỂ hoàn tác!`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/Admin/XoaLichSuNguoiXem', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({ userIds: [currentUserId] })
+                });
+                
+                if (response.ok) {
+                    alert(`Đã xóa lịch sử xem video của "${currentUserName}" thành công!`);
+                    closeModal('userVideoModal');
+                    // Reload trang để cập nhật danh sách
+                    location.reload();
+                } else {
+                    alert('Có lỗi xảy ra khi xóa. Vui lòng thử lại!');
+                }
+            } catch (error) {
+                console.error('Error deleting:', error);
+                alert('Có lỗi xảy ra khi xóa. Vui lòng thử lại!');
+            }
+        }
+
+        async function loadUserVideoHistory(idTaiKhoan) {
+            const list = document.getElementById('userVideoList');
+            list.innerHTML = '<div class="viewer-loading" style="text-align:center;padding:2rem;color:var(--c-steel);"><div style="width:32px;height:32px;border:3px solid var(--c-border);border-top-color:var(--c-cyan);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 8px;"></div><div>Đang tải...</div></div>';
+
+            try {
+                const response = await fetch(`/Admin/GetLichSuNguoiXem?idTaiKhoan=${idTaiKhoan}`);
+                const data = await response.json();
+
+                if (!data || data.length === 0) {
+                    list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--c-steel);font-size:.85rem;"><i class="ti ti-video-off" style="font-size:28px;opacity:.3;display:block;margin-bottom:.5rem;"></i>Người này chưa xem video nào</div>';
+                    document.getElementById('userTotalViews').textContent = '0';
+                    document.getElementById('userUniqueVideos').textContent = '0';
+                    document.getElementById('userTotalTime').textContent = '0 phút';
+                    return;
+                }
+
+                // Tính thống kê
+                const uniqueVideos = new Set(data.map(v => v.idVideo));
+                const totalTime = data.reduce((sum, v) => sum + (v.tongGiay || 0), 0);
+                
+                document.getElementById('userTotalViews').textContent = data.length;
+                document.getElementById('userUniqueVideos').textContent = uniqueVideos.size;
+                document.getElementById('userTotalTime').textContent = Math.round(totalTime / 60) + ' phút';
+
+                // Hiển thị danh sách
+                list.innerHTML = data.map((v, index) => {
+                    const phut = v.thoiLuongPhut || 0;
+                    const giay = v.thoiLuongGiay || 0;
+                    const tongGiay = v.tongGiay || 0;
+                    const phanTram = tongGiay > 0 ? Math.min(Math.round((tongGiay / 600) * 100), 100) : 0;
+                    
+                    let statusColor = 'var(--c-danger)';
+                    let statusText = 'Mới bắt đầu';
+                    if (phanTram >= 90) {
+                        statusColor = 'var(--c-success)';
+                        statusText = 'Đã xem hết';
+                    } else if (phanTram >= 50) {
+                        statusColor = 'var(--c-warn)';
+                        statusText = 'Đang xem';
+                    }
+
+                    return `
+                        <div style="background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;">
+                            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+                                <div style="flex:1;min-width:0;">
+                                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                                        <span style="background:var(--c-ice);color:var(--c-steel);font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:100px;">Lần ${index + 1}</span>
+                                        <span style="background:${statusColor};color:#fff;font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:100px;">${statusText}</span>
+                                    </div>
+                                    <div style="font-weight:600;font-size:.9rem;color:var(--c-navy);margin-bottom:4px;line-height:1.4;">
+                                        ${v.tenVideo}
+                                    </div>
+                                    <div style="display:flex;align-items:center;gap:12px;font-size:.75rem;color:var(--c-steel);">
+                                        <span><i class="ti ti-clock" style="font-size:12px;"></i> ${phut}:${String(giay).padStart(2, '0')}</span>
+                                        <span><i class="ti ti-percentage" style="font-size:12px;"></i> ${phanTram}% hoàn thành</span>
+                                    </div>
+                                </div>
+                                <div style="text-align:right;margin-left:12px;">
+                                    <div style="font-size:1.3rem;font-weight:700;color:var(--c-primary);">${phut}:${String(giay).padStart(2, '0')}</div>
+                                    <div style="font-size:.7rem;color:var(--c-steel);margin-top:2px;">${tongGiay} giây</div>
+                                </div>
+                            </div>
+                            <div style="height:8px;background:var(--c-border);border-radius:4px;overflow:hidden;">
+                                <div style="width:${phanTram}%;height:100%;background:${statusColor};transition:width 0.3s;"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading user video history:', error);
+                list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--c-danger);font-size:.85rem;"><i class="ti ti-alert-circle" style="font-size:28px;display:block;margin-bottom:.5rem;"></i>Lỗi tải dữ liệu</div>';
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('open');
+            currentUserId = null;
+            currentUserName = '';
+        }
+    </script>
+    <style>
+        @@keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+}
