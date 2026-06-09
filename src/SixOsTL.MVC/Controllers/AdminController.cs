@@ -221,20 +221,25 @@ namespace SixOsTL.MVC.Controllers
 
         [HttpPost, ValidateAntiForgeryToken]
         [RequestSizeLimit(50 * 1024 * 1024)]
-        public async Task<IActionResult> UploadFile(long idChucNang, IFormFile file, string tenFile, string? keyword, string? stt, CancellationToken ct)
+        public async Task<IActionResult> UploadFile(long idChucNang, IFormFile file, string tenFile, string? keyword, string? stt, string? remoteFolder, CancellationToken ct)
         {
             if (GuardAdmin() is { } r) return r;
-            if (file is null || file.Length == 0) return BadRequest("Chưa chọn file.");
+            if (file is null || file.Length == 0) return BadRequest("Ch?a ch?n file.");
+            if (string.IsNullOrWhiteSpace(remoteFolder)) return BadRequest("Ch?a ch?n th? m?c FTP ?? l?u t?i li?u.");
+
+            var ext = Path.GetExtension(file.FileName);
+            if (!string.Equals(ext, ".pdf", StringComparison.OrdinalIgnoreCase))
+                return BadRequest("Ch? cho ph?p upload file PDF.");
 
             var slug = SlugHelper.ToSlug(tenFile);
-            var ext = Path.GetExtension(file.FileName);
-            var remotePath = await _ftp.EnsureDirectoryAndGetPathAsync("files", $"cn_{idChucNang}")
-                             + $"/{slug}{ext}";
+            var targetFolder = remoteFolder.Trim().Trim('/');
+            var remotePath = $"{targetFolder}/{slug}{ext}";
 
             await using var stream = file.OpenReadStream();
-            var result = await _ftp.UploadAsync(stream, remotePath, ct: ct);
+            var result = await _ftp.UploadAsync(stream, remotePath, overwrite: true, ct: ct);
             if (!result.Success) return BadRequest(result.ErrorMessage);
 
+            // L?u ???ng d?n FTP th?c t? v?o DB qua c?t TaiLieuFile.DuongDanFile.
             await _taiLieu.CreateFileAsync(new CreateVideoDto(idChucNang, stt, tenFile, keyword, result.RemotePath!), ct);
             return Ok();
         }
