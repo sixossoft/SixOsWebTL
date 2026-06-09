@@ -113,6 +113,10 @@
                             <span class="badge-count">@pc</span>
                         }
                     </a>
+                    <a class="admin-nav-item @(ViewData["ActiveMenu"]?.ToString() == "thongke" ? "active" : "")"
+                       href="/Admin/ThongKeXemVideo">
+                        <i class="ti ti-chart-bar"></i> Thống kê xem video
+                    </a>
                 </div>
                 <div class="admin-sidebar-foot">
                     <a class="admin-foot-link" href="/TaiLieu/Index">

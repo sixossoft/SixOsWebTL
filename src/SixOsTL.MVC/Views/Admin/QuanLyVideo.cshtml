@@ -165,6 +165,11 @@
                                                         @{
                                                             var _token = Antiforgery.GetAndStoreTokens(Context).RequestToken;
                                                         }
+                                                        <button class="btn-primary btn-sm"
+                                                                title="Xem lịch sử người xem"
+                                                                onclick="openViewerModal(@v.Id, '@Html.Raw(v.TenVideo?.Replace("'", "\'"))')">
+                                                            <i class="ti ti-users"></i>
+                                                        </button>
                                                         <button class="btn-primary btn-sm btn-warn"
                                                                 title="Quản lý video liên quan"
                                                                 onclick="openLienQuanModal(@v.Id, '@Html.Raw(v.TenVideo?.Replace("'", "\'"))', '@_token')">
@@ -263,6 +268,116 @@
     </div>
 </div>
 
+@* MODAL LỊCH SỬ NGƯỜI XEM *@
+<div class="modal-overlay" id="viewerModal">
+    <div class="modal" style="max-width:720px;">
+        <div class="modal-head">
+            <span class="modal-title">
+                <i class="ti ti-users" style="color:var(--c-cyan);margin-right:6px;"></i>
+                Lịch sử người xem — <span id="viewerVideoName" style="font-weight:400;color:var(--c-steel);"></span>
+            </span>
+            <button class="btn-cancel" onclick="closeModal('viewerModal')" style="padding:4px 8px;">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <div class="modal-body" style="min-height:300px;">
+            <div id="viewerStats" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                <div style="background:var(--c-ice);padding:12px;border-radius:var(--radius-sm);border:1px solid var(--c-border);">
+                    <div style="font-size:.72rem;color:var(--c-steel);margin-bottom:4px;">Tổng lượt xem</div>
+                    <div style="font-size:1.4rem;font-weight:700;color:var(--c-navy);" id="viewerTotalCount">0</div>
+                </div>
+                <div style="background:var(--c-ice);padding:12px;border-radius:var(--radius-sm);border:1px solid var(--c-border);">
+                    <div style="font-size:.72rem;color:var(--c-steel);margin-bottom:4px;">Người xem duy nhất</div>
+                    <div style="font-size:1.4rem;font-weight:700;color:var(--c-navy);" id="viewerUniqueCount">0</div>
+                </div>
+            </div>
+            
+            <div style="font-size:.82rem;font-weight:600;color:var(--c-navy);margin-bottom:10px;">
+                Danh sách người xem
+            </div>
+            
+            <div id="viewerList" style="max-height:400px;overflow-y:auto;">
+                <div class="viewer-loading" style="text-align:center;padding:2rem;color:var(--c-steel);">
+                    <i class="ti ti-loader" style="font-size:24px;animation:spin 1s linear infinite;"></i>
+                    <div style="margin-top:8px;">Đang tải...</div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-foot" style="justify-content:flex-end;">
+            <button class="btn-cancel" onclick="closeModal('viewerModal')">Đóng</button>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="~/dist/js/admin/quanly/QuanLyVideo.js" asp-append-version="true"></script>
+    <script>
+        function openViewerModal(idVideo, tenVideo) {
+            document.getElementById('viewerVideoName').textContent = tenVideo;
+            document.getElementById('viewerModal').classList.add('open');
+            loadViewerHistory(idVideo);
+        }
+
+        async function loadViewerHistory(idVideo) {
+            const list = document.getElementById('viewerList');
+            list.innerHTML = '<div class="viewer-loading" style="text-align:center;padding:2rem;color:var(--c-steel);"><div class="spinner" style="width:32px;height:32px;border:3px solid var(--c-border);border-top-color:var(--c-cyan);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 8px;"></div><div>Đang tải...</div></div>';
+
+            try {
+                const response = await fetch(`/Admin/GetLichSuXemVideo?idVideo=${idVideo}`);
+                const data = await response.json();
+
+                if (!data || data.length === 0) {
+                    list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--c-steel);font-size:.85rem;"><i class="ti ti-mood-sad" style="font-size:28px;opacity:.3;display:block;margin-bottom:.5rem;"></i>Chưa có ai xem video này</div>';
+                    document.getElementById('viewerTotalCount').textContent = '0';
+                    document.getElementById('viewerUniqueCount').textContent = '0';
+                    return;
+                }
+
+                // Tính thống kê
+                document.getElementById('viewerTotalCount').textContent = data.length;
+                const uniqueViewers = new Set(data.map(v => v.tenNguoiXem));
+                document.getElementById('viewerUniqueCount').textContent = uniqueViewers.size;
+
+                // Hiển thị danh sách
+                list.innerHTML = data.map(v => {
+                    const phut = v.thoiLuongPhut || 0;
+                    const giay = v.thoiLuongGiay || 0;
+                    const tongGiay = v.tongGiay || 0;
+                    const phanTram = tongGiay > 0 ? Math.min(Math.round((tongGiay / 600) * 100), 100) : 0;
+
+                    return `
+                        <div style="background:var(--c-white);border:1px solid var(--c-border);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <div style="width:32px;height:32px;border-radius:50%;background:var(--c-powder);display:flex;align-items:center;justify-content:center;">
+                                        <i class="ti ti-user" style="color:var(--c-primary);font-size:14px;"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight:600;font-size:.85rem;color:var(--c-navy);">${v.tenNguoiXem}</div>
+                                        <div style="font-size:.72rem;color:var(--c-steel);">Lần xem #${v.id}</div>
+                                    </div>
+                                </div>
+                                <div style="text-align:right;">
+                                    <div style="font-size:.82rem;font-weight:600;color:var(--c-primary);">${phut}:${String(giay).padStart(2, '0')}</div>
+                                    <div style="font-size:.7rem;color:var(--c-steel);">${phanTram}%</div>
+                                </div>
+                            </div>
+                            <div style="height:6px;background:var(--c-border);border-radius:3px;overflow:hidden;">
+                                <div style="width:${phanTram}%;height:100%;background:var(--c-cyan);transition:width 0.3s;"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading viewer history:', error);
+                list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--c-danger);font-size:.85rem;"><i class="ti ti-alert-circle" style="font-size:28px;display:block;margin-bottom:.5rem;"></i>Lỗi tải dữ liệu</div>';
+            }
+        }
+    </script>
+    <style>
+        @@keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
 }

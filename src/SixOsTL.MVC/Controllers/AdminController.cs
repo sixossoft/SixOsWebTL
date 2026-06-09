@@ -141,6 +141,29 @@ namespace SixOsTL.MVC.Controllers
             return RedirectToAction(nameof(QuanLyVideo));
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetLichSuXemVideo(long idVideo, CancellationToken ct)
+        {
+            if (GuardAdmin() is { } r) return r;
+            
+            var lichSu = await _db.LichSuXemVideos
+                .Where(l => l.IDVideo == idVideo)
+                .Include(l => l.TaiKhoanDaoTao)
+                .OrderByDescending(l => l.Id)
+                .Select(l => new
+                {
+                    l.Id,
+                    l.IDVideo,
+                    TenNguoiXem = l.TaiKhoanDaoTao.HoTen ?? l.TaiKhoanDaoTao.TenTK,
+                    ThoiLuongPhut = l.Phut ?? 0,
+                    ThoiLuongGiay = l.Giay ?? 0,
+                    TongGiay = (l.Phut ?? 0) * 60 + (l.Giay ?? 0)
+                })
+                .ToListAsync(ct);
+
+            return Json(lichSu);
+        }
+
         // ── VIDEO LIÊN QUAN ───────────────────────────────────────
 
         [HttpGet]
@@ -561,6 +584,80 @@ namespace SixOsTL.MVC.Controllers
 
         // ── Private helpers ───────────────────────────────────────
         private Task<int> PendingCount(CancellationToken ct) => _db.HoiDaps.CountAsync(h => h.Active && h.ParentHoiDapID == null && !h.TraLois.Any(r => r.Active), ct);
+        
+        #region THỐNG KÊ XEM VIDEO
+        public async Task<IActionResult> ThongKeXemVideo(CancellationToken ct)
+        {
+            if (GuardAdmin() is { } r) return r;
+            ViewData["ActiveMenu"] = "thongke";
+            ViewBag.PendingCount = await PendingCount(ct);
+
+            // Lấy danh sách người dùng đã xem video
+            var nguoiXemList = await _db.LichSuXemVideos
+                .GroupBy(l => new { l.IDTaiKhoanDT, l.TaiKhoanDaoTao.HoTen, l.TaiKhoanDaoTao.TenTK })
+                .Select(g => new
+                {
+                    IdTaiKhoan = g.Key.IDTaiKhoanDT,
+                    TenNguoiXem = g.Key.HoTen ?? g.Key.TenTK,
+                    SoVideoXem = g.Select(x => x.IDVideo).Distinct().Count(),
+                    TongLuotXem = g.Count(),
+                    TongThoiGian = g.Sum(x => (x.Phut ?? 0) * 60 + (x.Giay ?? 0))
+                })
+                .OrderByDescending(x => x.TongLuotXem)
+                .ToListAsync(ct);
+            ViewBag.NguoiXemList = nguoiXemList;
+
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetLichSuNguoiXem(long idTaiKhoan, CancellationToken ct)
+        {
+            if (GuardAdmin() is { } r) return r;
+            
+            var lichSu = await _db.LichSuXemVideos
+                .Where(l => l.IDTaiKhoanDT == idTaiKhoan)
+                .Include(l => l.Video)
+                .OrderByDescending(l => l.Id)
+                .Select(l => new
+                {
+                    l.Id,
+                    l.IDVideo,
+                    TenVideo = l.Video.TenVideo,
+                    ThoiLuongPhut = l.Phut ?? 0,
+                    ThoiLuongGiay = l.Giay ?? 0,
+                    TongGiay = (l.Phut ?? 0) * 60 + (l.Giay ?? 0)
+                })
+                .ToListAsync(ct);
+
+            return Json(lichSu);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> XoaLichSuNguoiXem([FromBody] XoaLichSuRequest request, CancellationToken ct)
+        {
+            if (GuardAdmin() is { } r) return r;
+            
+            if (request?.UserIds == null || !request.UserIds.Any())
+                return BadRequest("Không có người dùng nào được chọn");
+
+            // Xóa tất cả lịch sử xem video của các user đã chọn
+            var lichSuCanXoa = await _db.LichSuXemVideos
+                .Where(l => request.UserIds.Contains(l.IDTaiKhoanDT))
+                .ToListAsync(ct);
+
+            _db.LichSuXemVideos.RemoveRange(lichSuCanXoa);
+            await _db.SaveChangesAsync(ct);
+
+            return Ok(new { message = $"Đã xóa lịch sử của {request.UserIds.Count} người dùng", deletedCount = lichSuCanXoa.Count });
+        }
+
+        public class XoaLichSuRequest
+        {
+            public List<long> UserIds { get; set; } = new();
+        }
+        #endregion
         #endregion
     }
 }
