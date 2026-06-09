@@ -12,6 +12,7 @@ namespace SixOsTL.Infrastructure.Persistence
         public DbSet<TaiKhoanDaoTao> TaiKhoans => Set<TaiKhoanDaoTao>();
         public DbSet<DmVaiTro> VaiTros => Set<DmVaiTro>();
         public DbSet<TaiKhoanVaiTro> TaiKhoanVaiTros => Set<TaiKhoanVaiTro>();
+        public DbSet<TaiKhoanChucNang> TaiKhoanChucNangs => Set<TaiKhoanChucNang>();
         public DbSet<DmVaiTroChucNang> VaiTroChucNangs => Set<DmVaiTroChucNang>();
         public DbSet<DmSanPham> SanPhams => Set<DmSanPham>();
         public DbSet<DmMucDoUuTien> MucDoUuTiens => Set<DmMucDoUuTien>();
@@ -74,6 +75,29 @@ namespace SixOsTL.Infrastructure.Persistence
                 e.HasOne(x => x.VaiTro)
                  .WithMany(v => v.TaiKhoanVaiTros)
                  .HasForeignKey(x => x.IDVaiTro);
+            });
+
+            // ── TaiKhoan_ChucNang ──────────────────────────────
+            modelBuilder.Entity<TaiKhoanChucNang>(e =>
+            {
+                e.ToTable("TaiKhoan_ChucNang");
+                e.HasKey(x => x.Id);
+                e.Property(x => x.Id).HasColumnName("ID");
+                e.Property(x => x.IdCN).HasColumnName("IdCN");
+                e.Property(x => x.IdTK).HasColumnName("IdTK");
+                e.Property(x => x.Active).HasColumnName("Active");
+
+                e.HasOne(x => x.ChucNang)
+                 .WithMany(c => c.TaiKhoanChucNangs)
+                 .HasForeignKey(x => x.IdCN)
+                 .HasPrincipalKey(c => c.Id)
+                 .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne(x => x.TaiKhoan)
+                 .WithMany(t => t.TaiKhoanChucNangs)
+                 .HasForeignKey(x => x.IdTK)
+                 .HasPrincipalKey(t => t.Id)
+                 .OnDelete(DeleteBehavior.Restrict);
             });
 
             // ── DM_SanPham ─────────────────────────────────────

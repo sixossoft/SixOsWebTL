@@ -16,6 +16,7 @@
         // Navigation
         public ThongTinDoanhNghiepDaoTao? CoSoKCB { get; set; }
         public ICollection<TaiKhoanVaiTro> TaiKhoanVaiTros { get; set; } = new List<TaiKhoanVaiTro>();
+        public ICollection<TaiKhoanChucNang> TaiKhoanChucNangs { get; set; } = new List<TaiKhoanChucNang>();
         public ICollection<TaiLieuHoiDap> HoiDaps { get; set; } = new List<TaiLieuHoiDap>();
 
         // kiểm tra tài khoản còn hiệu lực

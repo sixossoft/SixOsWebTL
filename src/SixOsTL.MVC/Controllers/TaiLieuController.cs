@@ -24,14 +24,19 @@ public class TaiLieuController : Controller
     {
         var roles = HttpContext.Session.GetRoles();
         var isAdmin = roles.Contains("ADMIN");
+        var userId = HttpContext.Session.GetUserId();
 
         var query = _db.ChucNangs.AsQueryable();
-        
-        // Nếu không phải ADMIN, lọc theo Active và bảng DM_VaiTro_ChucNang
+
         if (!isAdmin)
         {
-            query = query.Where(c => c.Active && _db.VaiTroChucNangs
-                .Any(rv => rv.IDChucNang == c.Id && roles.Contains(rv.VaiTro.MaVaiTro)));
+            if (userId is null) return Unauthorized();
+
+            var allowedChucNangIds = _db.TaiKhoanChucNangs
+                .Where(x => x.Active && x.IdTK == userId.Value && x.IdCN.HasValue)
+                .Select(x => x.IdCN!.Value);
+
+            query = query.Where(c => c.Active && allowedChucNangIds.Contains(c.Id));
         }
 
         var chucNangs = await query

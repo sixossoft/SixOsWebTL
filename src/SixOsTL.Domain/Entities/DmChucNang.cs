@@ -14,5 +14,6 @@
         public ICollection<TaiLieuVideo> Videos { get; set; } = new List<TaiLieuVideo>();
         public ICollection<TaiLieuFile> Files { get; set; } = new List<TaiLieuFile>();
         public ICollection<TaiLieuHoiDap> HoiDaps { get; set; } = new List<TaiLieuHoiDap>();
+        public ICollection<TaiKhoanChucNang> TaiKhoanChucNangs { get; set; } = new List<TaiKhoanChucNang>();
     }
 }

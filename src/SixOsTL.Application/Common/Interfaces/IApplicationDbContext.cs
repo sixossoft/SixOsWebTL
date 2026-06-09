@@ -9,6 +9,7 @@ namespace SixOsTL.Application.Common.Interfaces
         DbSet<TaiKhoanDaoTao> TaiKhoans { get; }
         DbSet<DmVaiTro> VaiTros { get; }
         DbSet<TaiKhoanVaiTro> TaiKhoanVaiTros { get; }
+        DbSet<TaiKhoanChucNang> TaiKhoanChucNangs { get; }
         DbSet<DmVaiTroChucNang> VaiTroChucNangs { get; }
         DbSet<DmSanPham> SanPhams { get; }
         DbSet<DmMucDoUuTien> MucDoUuTiens { get; }
