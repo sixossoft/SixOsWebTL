@@ -465,6 +465,11 @@ namespace SixOsTL.MVC.Controllers
                               && !h.TraLois.Any(r => r.Active), ct);
             ViewBag.PendingCount = pending;
 
+            // Đếm số tin ẩn
+            var hiddenCount = await _db.HoiDaps
+                .CountAsync(h => !h.Active && h.ParentHoiDapID == null, ct);
+            ViewBag.HiddenCount = hiddenCount;
+
             var list = await _db.HoiDaps
                 .Where(h => h.Active && h.ParentHoiDapID == null) // Chỉ lấy Active = true
                 .Include(h => h.TaiKhoan)

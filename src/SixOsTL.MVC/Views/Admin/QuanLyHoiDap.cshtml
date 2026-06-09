@@ -35,7 +35,7 @@
             </button>
             <a href="/Admin/DanhSachTinAn" class="filter-btn" style="text-decoration:none;">
                 <i class="ti ti-eye-off" style="font-size:12px;"></i>
-                Xem tin ẩn (@Model.Count(h => !h.Active))
+                Xem tin ẩn (@(ViewBag.HiddenCount ?? 0))
             </a>
             <div class="search-bar-wrap">
                 <i class="ti ti-search"></i>
