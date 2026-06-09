@@ -76,7 +76,6 @@
                         <div class="group-header" onclick="toggleGroup('@cn.Id')">
                             <div class="group-left" style="pointer-events: none;">
                                 <i class="ti ti-chevron-right group-arrow" aria-hidden="true" style="font-size: 12px;"></i>
-                                <i class="ti ti-folder" aria-hidden="true" style="margin-left: 2px;"></i>
                                 <span class="group-name">@cn.ChucNang</span>
                             </div>
                             <div class="group-right" style="pointer-events: none;">
@@ -96,7 +95,6 @@
                                     <div class="sub-group-header" onclick="toggleSubGroup('video-@cn.Id')">
                                         <div class="sub-group-left" style="pointer-events: none;">
                                             <i class="ti ti-chevron-right sub-group-arrow" aria-hidden="true" style="font-size: 11px;"></i>
-                                            <i class="ti ti-video" aria-hidden="true" style="margin-left: 2px;"></i>
                                             <span class="sub-group-name">Video hướng dẫn</span>
                                         </div>
                                         <div class="sub-group-right" style="pointer-events: none;">
@@ -116,16 +114,9 @@
                                                  data-cn-id="@cn.Id"
                                                  data-keyword="@(v.Keyword?.ToLower() ?? "") @(v.TenVideo?.ToLower() ?? "")"
                                                  onclick="openDoc(this)">
-                                                <div class="doc-icon video">
-                                                    <i class="ti ti-player-play" aria-hidden="true"></i>
-                                                </div>
+
                                                 <div class="doc-info">
                                                     <div class="doc-name">@v.TenVideo</div>
-                                                    <div class="doc-meta">Video</div>
-                                                    @if (!string.IsNullOrEmpty(v.STT))
-                                                    {
-                                                        <div class="doc-stt">STT: @v.STT</div>
-                                                    }
                                                 </div>
                                             </div>
                                         }
@@ -138,7 +129,6 @@
                                     <div class="sub-group-header" onclick="toggleSubGroup('file-@cn.Id')">
                                         <div class="sub-group-left" style="pointer-events: none;">
                                             <i class="ti ti-chevron-right sub-group-arrow" aria-hidden="true" style="font-size: 11px;"></i>
-                                            <i class="ti ti-files" aria-hidden="true" style="margin-left: 2px;"></i>
                                             <span class="sub-group-name">Tài liệu</span>
                                         </div>
                                         <div class="sub-group-right" style="pointer-events: none;">
@@ -160,23 +150,9 @@
                                                  data-cn-id="@cn.Id"
                                                  data-keyword="@(f.Keyword?.ToLower() ?? "") @(f.TenFile?.ToLower() ?? "")"
                                                  onclick="openDoc(this)">
-                                                <div class="doc-icon @(isPdf ? "pdf" : "word")">
-                                                    @if (isPdf)
-                                                    {
-                                                        <i class="ti ti-file-type-pdf"></i>
-                                                    }
-                                                    else
-                                                    {
-                                                        <i class="ti ti-file-text"></i>
-                                                    }
-                                                </div>
+
                                                 <div class="doc-info">
                                                     <div class="doc-name">@f.TenFile</div>
-                                                    <div class="doc-meta">@(isPdf ? "PDF" : "Word")</div>
-                                                    @if (!string.IsNullOrEmpty(f.STT))
-                                                    {
-                                                        <div class="doc-stt">STT: @f.STT</div>
-                                                    }
                                                 </div>
                                             </div>
                                         }
@@ -203,7 +179,7 @@
         <button class="btn-back-sidebar" onclick="backToSidebar()" aria-label="Quay lại">
             <i class="ti ti-arrow-left"></i>
         </button>
-        <div class="viewer-info">
+        <div class="viewer-info" style="display:none;">
             <div class="viewer-title">
                 <i class="ti ti-player-play" id="viewerIcon" aria-hidden="true"></i>
                 <span id="viewerTitle">—</span>
@@ -214,7 +190,7 @@
                 <span class="viewer-badge badge-video" id="viewerBadge">Video</span>
             </div>
         </div>
-        <div class="viewer-actions">
+        <div class="viewer-actions" style="display:none;">
             <a class="btn-action" id="btnDownload" href="#" download target="_blank">
                 <i class="ti ti-download"></i> Tải về
             </a>

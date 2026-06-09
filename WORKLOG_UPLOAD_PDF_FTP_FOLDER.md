@@ -13,22 +13,26 @@
 
 2. Sửa backend upload tài liệu
    - File: src/SixOsTL.MVC/Controllers/AdminController.cs
-   - Thêm tham số emoteFolder cho UploadFile.
+   - Thêm tham số 
+emoteFolder cho UploadFile.
    - Bắt buộc chọn thư mục FTP trước khi upload; nếu chưa chọn thì trả lỗi Chưa chọn thư mục FTP để lưu tài liệu.
    - Chặn upload không phải PDF bằng kiểm tra extension .pdf.
    - Upload vào {remoteFolder}/{slug}.pdf.
-   - Dùng esult.RemotePath để gọi CreateFileAsync, nên DB tiếp tục lưu đúng đường dẫn FTP thực tế vào DuongDanFile.
+   - Dùng 
+esult.RemotePath để gọi CreateFileAsync, nên DB tiếp tục lưu đúng đường dẫn FTP thực tế vào DuongDanFile.
 
 3. Sửa giao diện quản lý tài liệu
    - File: src/SixOsTL.MVC/Views/Admin/QuanLyFile.cshtml
-   - Thêm ô emoteFolder readonly + nút Chọn trong modal Upload Tài liệu.
+   - Thêm ô 
+emoteFolder readonly + nút Chọn trong modal Upload Tài liệu.
    - Thêm modal duyệt/chọn thư mục FTP: Root, Lên, breadcrumb, danh sách folder con, chọn folder hiện tại.
 
 4. Sửa JavaScript quản lý tài liệu
    - File: src/SixOsTL.MVC/wwwroot/dist/js/admin/quanly/QuanLyFile.js
    - Tái sử dụng logic chọn folder FTP từ QuanLyVideo.js.
    - openFolderPicker() gọi /Admin/GetFtpFolders để tải thư mục FTP.
-   - Khi chọn folder, giá trị được ghi vào input emoteFolder; submitUpload sẽ gửi kèm về backend.
+   - Khi chọn folder, giá trị được ghi vào input 
+emoteFolder; submitUpload sẽ gửi kèm về backend.
 
 ## Lỗi gặp phải và cách xử lý
 

@@ -1,4 +1,4 @@
-﻿// ── State ─────────────────────────────────────────────────────
+// ── State ─────────────────────────────────────────────────────
 var _activeItem = null;
 var _currentDocId = null;   // IDChucNang của doc đang mở
 var _currentVideoId = null;   // ID của video đang mở (data-id)
@@ -96,6 +96,7 @@ function openDoc(el) {
 
     // load related nếu là video
     if (type === 'video' && itemId) {
+        _renderRelatedPanel(); // Render rỗng trước khi tải dữ liệu
         _loadRelatedVideos(itemId);
     }
 
@@ -180,7 +181,7 @@ function renderViewer(type, url, name) {
                 controlsList="nodownload"
                 preload="auto"
                 data-video-id="${_currentVideoId ?? ''}"
-                style="width:100%;flex:1;min-height:0;display:block;background:#001830;"
+                style="width:100%;aspect-ratio:16/9;max-height:65vh;display:block;background:#001830;margin:0 auto;"
                 onloadedmetadata="onVideoReady(this)"
                 onerror="onVideoError(this)">
                 <source src="${url}" type="video/mp4">
@@ -201,6 +202,12 @@ function renderViewer(type, url, name) {
             <div id="fsRelatedOverlay" class="fs-related-overlay" style="display:none;"></div>
             <!-- Thanh controls custom — theater mode button -->
             <div class="video-custom-bar">
+                <a class="btn-custom-fs" href="${url}" download target="_blank" style="text-decoration:none; display:flex; align-items:center; gap:6px; color:#fff; font-size: 0.85rem;">
+                    <i class="ti ti-download"></i> Tải về
+                </a>
+                <button class="btn-custom-fs" onclick="toggleComment()" aria-label="Hỏi đáp" title="Hỏi đáp" style="display:flex; align-items:center; gap:6px; font-size: 0.85rem;">
+                    <i class="ti ti-message-circle"></i> Chat
+                </button>
                 <button class="btn-custom-fs" onclick="_toggleFullscreen()">
                     <i class="ti ti-maximize" id="fsIcon"></i>
                     <span id="fsLabel">Phóng to</span>
@@ -366,14 +373,13 @@ function _loadRelatedVideos(videoId) {
         .then(data => {
             _relatedFetchController = null;
             _relatedVideos = data || [];
-            if (_relatedVideos.length > 0) {
-                _renderRelatedPanel();
-                _syncRelatedOverlay();
-            }
+            _renderRelatedPanel();
+            _syncRelatedOverlay();
         })
         .catch(err => {
             if (err.name === 'AbortError') return; // bỏ qua — đây là cancel có chủ đích
             _relatedVideos = [];
+            _renderRelatedPanel();
         });
 }
 
@@ -383,29 +389,26 @@ function _renderRelatedPanel() {
     if (!panel) return;
 
     panel.style.display = '';
+    const content = _relatedVideos.length > 0 
+        ? `<div class="related-list" id="relatedList">
+               ${_relatedVideos.map((v, i) => _buildRelatedItem(v, i)).join('')}
+           </div>`
+        : `<div style="padding: 15px; text-align: center; color: var(--c-steel); font-size: 0.85rem; font-style: italic;">Chưa có video liên quan</div>`;
+
     panel.innerHTML = `
         <div class="related-header">
             <i class="ti ti-playlist"></i>
             <span>Video liên quan</span>
             <span class="related-count">${_relatedVideos.length}</span>
         </div>
-        <div class="related-list" id="relatedList">
-            ${_relatedVideos.map((v, i) => _buildRelatedItem(v, i)).join('')}
-        </div>`;
+        ${content}`;
 }
 
 function _buildRelatedItem(v, index) {
-    const tagBadge = v.isTagBased
-        ? `<span class="related-tag-badge"><i class="ti ti-tag"></i>${_getTagLabel(v.idTag)}</span>`
-        : `<span class="related-manual-badge"><i class="ti ti-link"></i>Liên kết</span>`;
     return `
         <div class="related-item" data-index="${index}" onclick="_playRelated(${index})">
-            <div class="related-thumb">
-                <i class="ti ti-player-play"></i>
-            </div>
             <div class="related-info">
                 <div class="related-name">${v.tenVideo}</div>
-                ${tagBadge}
             </div>
         </div>`;
 }
@@ -574,7 +577,6 @@ function _renderFsOverlayContent(overlay) {
             <div class="fs-related-list">
                 ${_relatedVideos.map((v, i) => `
                     <div class="fs-related-item" onclick="_playRelated(${i})">
-                        <div class="fs-thumb"><i class="ti ti-player-play"></i></div>
                         <div class="fs-name">${v.tenVideo}</div>
                     </div>`).join('')}
             </div>
@@ -699,7 +701,7 @@ function handleSearch(input) {
 
         }
         if (hasQuery) {
-            const kw = (el.dataset.keyword || '') + ' ' + (el.dataset.name || '').toLowerCase();
+            const kw = (el.dataset.keyword || '') + ' ' + (el.dataset.name || '').toLowerCase() + ' ' + (el.dataset.group || '').toLowerCase();
             if (!kw.includes(q)) return false;
         }
         return true;
@@ -736,7 +738,7 @@ function handleSearch(input) {
                 if (_searchFilter === 'pdf' && t !== 'pdf') return false;
             }
             if (hasQuery) {
-                const kw = (el.dataset.keyword || '') + ' ' + (el.dataset.name || '').toLowerCase();
+                const kw = (el.dataset.keyword || '') + ' ' + (el.dataset.name || '').toLowerCase() + ' ' + (el.dataset.group || '').toLowerCase();
                 if (!kw.includes(q)) return false;
             }
             return true;
@@ -759,7 +761,6 @@ function handleSearch(input) {
         <div class="group-header" onclick="toggleGroup(${cnId}, true)">
             <div class="group-left">
                 <i class="ti ti-chevron-right group-arrow" style="font-size: 12px;"></i>
-                <i class="ti ti-folder" aria-hidden="true" style="margin-left: 2px;"></i>
                 <span class="group-name">${cnName}</span>
             </div>
             <div class="group-right">
