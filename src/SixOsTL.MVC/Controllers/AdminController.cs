@@ -514,11 +514,16 @@ namespace SixOsTL.MVC.Controllers
                 _db.TaiKhoanVaiTros.Add(new TaiKhoanVaiTro
                 { IDTaiKhoan = tk.Id, IDVaiTro = role.Id });
 
-            // Cập nhật chức năng được phân quyền - xóa cũ và thêm mới
+            // Cập nhật chức năng được phân quyền - soft delete (set Active = false) thay vì xóa
             var oldChucNangs = await _db.TaiKhoanChucNangs
                 .Where(tc => tc.IdTK == id)
                 .ToListAsync(ct);
-            _db.TaiKhoanChucNangs.RemoveRange(oldChucNangs);
+
+            // Đánh dấu tất cả chức năng cũ là không active
+            foreach (var old in oldChucNangs)
+            {
+                old.Active = false;
+            }
 
             if (!string.IsNullOrWhiteSpace(chucNangIds))
             {
@@ -530,12 +535,23 @@ namespace SixOsTL.MVC.Controllers
 
                 foreach (var cnId in cnIds)
                 {
-                    _db.TaiKhoanChucNangs.Add(new TaiKhoanChucNang
+                    // Kiểm tra xem đã tồn tại chưa
+                    var existing = oldChucNangs.FirstOrDefault(tc => tc.IdCN == cnId);
+                    if (existing != null)
                     {
-                        IdTK = tk.Id,
-                        IdCN = cnId,
-                        Active = true
-                    });
+                        // Nếu đã tồn tại thì set lại Active = true
+                        existing.Active = true;
+                    }
+                    else
+                    {
+                        // Nếu chưa có thì thêm mới
+                        _db.TaiKhoanChucNangs.Add(new TaiKhoanChucNang
+                        {
+                            IdTK = tk.Id,
+                            IdCN = cnId,
+                            Active = true
+                        });
+                    }
                 }
             }
 
