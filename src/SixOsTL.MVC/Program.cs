@@ -1,4 +1,4 @@
-using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
 using SixOsTL.Infrastructure.Persistence;
 using SixOsTL.MVC.Middleware;
 using SixOsTL.MVC.Swagger;

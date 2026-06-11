@@ -1,4 +1,4 @@
-﻿using Microsoft.OpenApi;
+﻿using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace SixOsTL.MVC.Swagger
@@ -11,14 +11,13 @@ namespace SixOsTL.MVC.Swagger
 
             if (!fileParams.Any()) return;
 
-            IDictionary<string, IOpenApiSchema> properties =
-                fileParams.ToDictionary(
-                    p => p.Name!,
-                    p => (IOpenApiSchema)new OpenApiSchema
-                    {
-                        Type = JsonSchemaType.String,
-                        Format = "binary"
-                    });
+            var properties = fileParams.ToDictionary(
+                p => p.Name!,
+                p => new OpenApiSchema
+                {
+                    Type = "string",
+                    Format = "binary"
+                });
 
             operation.RequestBody = new OpenApiRequestBody
             {
@@ -28,7 +27,7 @@ namespace SixOsTL.MVC.Swagger
                     {
                         Schema = new OpenApiSchema
                         {
-                            Type = JsonSchemaType.Object,
+                            Type = "object",
                             Properties = properties
                         }
                     }
