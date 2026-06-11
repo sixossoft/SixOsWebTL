@@ -297,8 +297,8 @@ namespace SixOsTL.Infrastructure.Services
             h.Id, h.IDChucNang, h.IDTaiKhoan,
             h.TaiKhoan?.HoTen ?? h.TaiKhoan?.TenTK,
             h.NoiDung, h.CongKhai, h.Active, h.ParentHoiDapID, h.NgayTao,
-            h.TraLois?.Where(r => r.Active).Select(MapHoiDap) ?? Enumerable.Empty<HoiDapDto>(),
-            h.HinhAnhs?.Select(x => new HoiDapHinhAnhDto(x.Id, x.IdTLHD, x.DuongDanFileAnh)) ?? Enumerable.Empty<HoiDapHinhAnhDto>()
+            h.TraLois?.Where(r => r.Active).Select(MapHoiDap).ToList() ?? [],
+            h.HinhAnhs?.Select(x => new HoiDapHinhAnhDto(x.Id, x.IdTLHD, x.DuongDanFileAnh)).ToList() ?? []
         );
     }
 }

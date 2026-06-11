@@ -62,8 +62,8 @@ namespace SixOsTL.MVC.Controllers
                 .Select(h => new HoiDapDto(h.Id, h.IDChucNang, h.IDTaiKhoan,
                     h.TaiKhoan.HoTen ?? h.TaiKhoan.TenTK,
                     h.NoiDung, h.CongKhai, h.Active, null, h.NgayTao,
-                    Enumerable.Empty<HoiDapDto>(),
-                    Enumerable.Empty<HoiDapHinhAnhDto>()))
+                    Array.Empty<HoiDapDto>(),
+                    Array.Empty<HoiDapHinhAnhDto>()))
                 .ToListAsync(ct);
 
             ViewBag.RecentVideos = await _db.Videos.Where(v => v.Active)
@@ -603,7 +603,7 @@ namespace SixOsTL.MVC.Controllers
                     r.Id, r.IDChucNang, r.IDTaiKhoan,
                     r.TaiKhoan.HoTen ?? r.TaiKhoan.TenTK,
                     r.NoiDung, r.CongKhai, r.Active, r.ParentHoiDapID, r.NgayTao,
-                    Enumerable.Empty<HoiDapDto>(),
+                    [],
                     r.HinhAnhs.Select(a => new HoiDapHinhAnhDto(a.Id, a.IdTLHD, a.DuongDanFileAnh)))),
                 h.HinhAnhs.Select(a => new HoiDapHinhAnhDto(a.Id, a.IdTLHD, a.DuongDanFileAnh))));
 
@@ -632,7 +632,7 @@ namespace SixOsTL.MVC.Controllers
                     r.Id, r.IDChucNang, r.IDTaiKhoan,
                     r.TaiKhoan.HoTen ?? r.TaiKhoan.TenTK,
                     r.NoiDung, r.CongKhai, r.Active, r.ParentHoiDapID, r.NgayTao,
-                    Enumerable.Empty<HoiDapDto>(),
+                    [],
                     r.HinhAnhs.Select(a => new HoiDapHinhAnhDto(a.Id, a.IdTLHD, a.DuongDanFileAnh)))),
                 h.HinhAnhs.Select(a => new HoiDapHinhAnhDto(a.Id, a.IdTLHD, a.DuongDanFileAnh))));
 
