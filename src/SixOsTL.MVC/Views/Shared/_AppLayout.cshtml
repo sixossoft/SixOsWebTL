@@ -45,143 +45,152 @@
         </a>
         <div class="nav-sep"></div>
         <div class="nav-breadcrumb">
-            <a class="cur" id="navBreadcrumb"
-               style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Công ty Vũ Phong &nbsp;&nbsp;
-                0901 878 896 &nbsp;&nbsp; sixossoft@gmail.com &nbsp;&nbsp; 78/14 Nguyễn Thị Tú - P.Bình Hưng H - Q.Bình
-                Tân - Tp. HCM
-            </a>
-        </div>
-        <div class="nav-right">
-            @if (_isAdmin)
-            {
-                <a class="nav-btn" href="/Admin/Index" title="Admin dashboard">
-                    <i class="ti ti-layout-dashboard"></i>
-                </a>
-                <a class="nav-btn" href="/TaiLieu/Index" title="Xem tài liệu">
-                    <i class="ti ti-books"></i>
-                </a>
-            }
-            <div class="nav-user">
-                <div class="nav-avatar"><i class="ti ti-user"></i></div>
-                <span class="nav-uname">@_tenTK</span>
-                @if (_isAdmin)
-                {
-                    <span class="nav-role-badge">Admin</span>
-                }
-            </div>
-            <a class="nav-btn danger" href="/Account/Logout" title="Đăng xuất">
-                <i class="ti ti-logout"></i>
-            </a>
-        </div>
-    </nav>
+            <span><a href="https://sixossoft.com/" target="_blank" style="color:white;text-decoration:none;">Công ty
+                Vũ Phong</a></span>
+                &nbsp;&nbsp;
 
-    <div class="app-body">
-        @if (_isAdmin && _curCtrl == "Admin")
-        {
-            <aside class="admin-sidebar">
-                <div class="admin-nav-section">
-                    <div class="admin-nav-label">Tổng quan</div>
-                    <a class="admin-nav-item @(_curCtrl == "Admin" && ViewData["ActiveMenu"]?.ToString() == "dashboard" ? "active" : "")"
-                       href="/Admin/Index">
-                        <i class="ti ti-layout-dashboard"></i> Dashboard
-                    </a>
+                <a href="https://zalo.me/112385377241659347" target="_blank" style="color:white;text-decoration:none;">
+                    0901 878 896
+                </a>
+
+                &nbsp;&nbsp;
+                <span style="color: white;text-decoration:none;">sixossoft@gmail.com</span>
+                &nbsp;&nbsp;
+                <span><a href="https://maps.google.com/?q=50+Văn+Cao,+Phú+Thọ+Hòa,+Phường+Phú+Thọ+Hòa,+Thành+phố+Hồ+Chí+Minh"
+                         target="_blank" style="color: white;text-decoration:none;">50 Văn Cao, Phú Thọ Hòa, Phường Phú Thọ
+                    Hòa, Thành phố Hồ Chí Minh</a></span>
                 </div>
-                <div class="admin-nav-divider"></div>
-                <div class="admin-nav-section">
-                    <div class="admin-nav-label">Nội dung</div>
-                    <a class="admin-nav-item @(ViewData["ActiveMenu"]?.ToString() == "video" ? "active" : "")"
-                       href="/Admin/QuanLyVideo">
-                        <i class="ti ti-player-play"></i> Video
-                    </a>
-                    <a class="admin-nav-item @(ViewData["ActiveMenu"]?.ToString() == "file" ? "active" : "")"
-                       href="/Admin/QuanLyFile">
-                        <i class="ti ti-files"></i> Tài liệu PDF
-                    </a>
-                    <a class="admin-nav-item @(ViewData["ActiveMenu"]?.ToString() == "chucnang" ? "active" : "")"
-                       href="/Admin/QuanLyChucNang">
-                        <i class="ti ti-folder"></i> Chức năng
-                    </a>
-                </div>
-                <div class="admin-nav-divider"></div>
-                <div class="admin-nav-section">
-                    <div class="admin-nav-label">Người dùng</div>
-                    <a class="admin-nav-item @(ViewData["ActiveMenu"]?.ToString() == "user" ? "active" : "")"
-                       href="/Admin/QuanLyUser">
-                        <i class="ti ti-users"></i> Tài khoản
-                    </a>
-                    <a class="admin-nav-item @(ViewData["ActiveMenu"]?.ToString() == "hoidap" ? "active" : "")"
-                       href="/Admin/QuanLyHoiDap">
-                        <i class="ti ti-messages"></i> Hỏi đáp
-                        @if (ViewBag.PendingCount is int pc && pc > 0)
+                <div class="nav-right">
+                    @if (_isAdmin)
+                    {
+                        <a class="nav-btn" href="/Admin/Index" title="Admin dashboard">
+                            <i class="ti ti-layout-dashboard"></i>
+                        </a>
+                        <a class="nav-btn" href="/TaiLieu/Index" title="Xem tài liệu">
+                            <i class="ti ti-books"></i>
+                        </a>
+                    }
+                    <div class="nav-user">
+                        <div class="nav-avatar"><i class="ti ti-user"></i></div>
+                        <span class="nav-uname">@_tenTK</span>
+                        @if (_isAdmin)
                         {
-                            <span class="badge-count">@pc</span>
+                            <span class="nav-role-badge">Admin</span>
                         }
-                    </a>
-                    <a class="admin-nav-item @(ViewData["ActiveMenu"]?.ToString() == "thongke" ? "active" : "")"
-                       href="/Admin/ThongKeXemVideo">
-                        <i class="ti ti-chart-bar"></i> Thống kê xem video
-                    </a>
-                </div>
-                <div class="admin-sidebar-foot">
-                    <a class="admin-foot-link" href="/TaiLieu/Index">
-                        <i class="ti ti-arrow-left"></i> Về trang tài liệu
+                    </div>
+                    <a class="nav-btn danger" href="/Account/Logout" title="Đăng xuất">
+                        <i class="ti ti-logout"></i>
                     </a>
                 </div>
-            </aside>
-        }
-        @RenderBody()
-    </div>
+            </nav>
 
-    @* Comment panel — dùng cho trang TaiLieu *@
-    @if (_curCtrl == "TaiLieu")
-    {
-        <aside class="comment-panel" id="commentPanel" role="complementary" aria-label="Hỏi đáp">
-            <div class="comment-head">
-                <div class="comment-head-title">
-                    <i class="ti ti-message-circle"></i> Hỏi đáp
-                </div>
-                <button class="btn-close-comment" onclick="toggleComment()" aria-label="Đóng">
-                    <i class="ti ti-x"></i>
-                </button>
+            <div class="app-body">
+                @if (_isAdmin && _curCtrl == "Admin")
+                {
+                    <aside class="admin-sidebar">
+                        <div class="admin-nav-section">
+                            <div class="admin-nav-label">Tổng quan</div>
+                            <a class="admin-nav-item @(_curCtrl == "Admin" && ViewData["ActiveMenu"]?.ToString() == "dashboard" ? "active" : "")"
+                               href="/Admin/Index">
+                                <i class="ti ti-layout-dashboard"></i> Dashboard
+                            </a>
+                        </div>
+                        <div class="admin-nav-divider"></div>
+                        <div class="admin-nav-section">
+                            <div class="admin-nav-label">Nội dung</div>
+                            <a class="admin-nav-item @(ViewData["ActiveMenu"]?.ToString() == "video" ? "active" : "")"
+                               href="/Admin/QuanLyVideo">
+                                <i class="ti ti-player-play"></i> Video
+                            </a>
+                            <a class="admin-nav-item @(ViewData["ActiveMenu"]?.ToString() == "file" ? "active" : "")"
+                               href="/Admin/QuanLyFile">
+                                <i class="ti ti-files"></i> Tài liệu PDF
+                            </a>
+                            <a class="admin-nav-item @(ViewData["ActiveMenu"]?.ToString() == "chucnang" ? "active" : "")"
+                               href="/Admin/QuanLyChucNang">
+                                <i class="ti ti-folder"></i> Chức năng
+                            </a>
+                        </div>
+                        <div class="admin-nav-divider"></div>
+                        <div class="admin-nav-section">
+                            <div class="admin-nav-label">Người dùng</div>
+                            <a class="admin-nav-item @(ViewData["ActiveMenu"]?.ToString() == "user" ? "active" : "")"
+                               href="/Admin/QuanLyUser">
+                                <i class="ti ti-users"></i> Tài khoản
+                            </a>
+                            <a class="admin-nav-item @(ViewData["ActiveMenu"]?.ToString() == "hoidap" ? "active" : "")"
+                               href="/Admin/QuanLyHoiDap">
+                                <i class="ti ti-messages"></i> Hỏi đáp
+                                @if (ViewBag.PendingCount is int pc && pc > 0)
+                                {
+                                    <span class="badge-count">@pc</span>
+                                }
+                            </a>
+                            <a class="admin-nav-item @(ViewData["ActiveMenu"]?.ToString() == "thongke" ? "active" : "")"
+                               href="/Admin/ThongKeXemVideo">
+                                <i class="ti ti-chart-bar"></i> Thống kê xem video
+                            </a>
+                        </div>
+                        <div class="admin-sidebar-foot">
+                            <a class="admin-foot-link" href="/TaiLieu/Index">
+                                <i class="ti ti-arrow-left"></i> Về trang tài liệu
+                            </a>
+                        </div>
+                    </aside>
+                }
+                @RenderBody()
             </div>
-            <div class="comment-body" id="commentBody">
-                <div class="comment-empty" id="commentEmpty">
-                    <i class="ti ti-messages"></i>
-                    Chưa có câu hỏi nào.<br>Hãy đặt câu hỏi bên dưới!
-                </div>
-            </div>
-            <div class="comment-foot">
-                <div class="comment-img-preview" id="commentImgPreview"></div>
-                <div class="comment-input-wrap">
-                    <textarea class="comment-input" id="commentInput" placeholder="Nhập câu hỏi của bạn..."
-                              rows="3"></textarea>
-                    <div class="comment-actions">
-                        <label class="btn-icon btn-upload-img" for="commentImgInput" title="Đính kèm ảnh"
-                               aria-label="Đính kèm ảnh">
-                            <i class="ti ti-photo"></i>
-                            <span class="upload-badge" id="uploadBadge" style="display:none;"></span>
-                        </label>
-                        <input type="file" id="commentImgInput" accept="image/*" multiple style="display:none;"
-                               onchange="onCommentImgChange(this)" />
-                        <button class="btn-send" onclick="submitComment()" aria-label="Gửi">
-                            <i class="ti ti-send"></i>
+
+            @* Comment panel — dùng cho trang TaiLieu *@
+            @if (_curCtrl == "TaiLieu")
+            {
+                <aside class="comment-panel" id="commentPanel" role="complementary" aria-label="Hỏi đáp">
+                    <div class="comment-head">
+                        <div class="comment-head-title">
+                            <i class="ti ti-message-circle"></i> Hỏi đáp
+                        </div>
+                        <button class="btn-close-comment" onclick="toggleComment()" aria-label="Đóng">
+                            <i class="ti ti-x"></i>
                         </button>
                     </div>
-                </div>
-            </div>
+                    <div class="comment-body" id="commentBody">
+                        <div class="comment-empty" id="commentEmpty">
+                            <i class="ti ti-messages"></i>
+                            Chưa có câu hỏi nào.<br>Hãy đặt câu hỏi bên dưới!
+                        </div>
+                    </div>
+                    <div class="comment-foot">
+                        <div class="comment-img-preview" id="commentImgPreview"></div>
+                        <div class="comment-input-wrap">
+                            <textarea class="comment-input" id="commentInput" placeholder="Nhập câu hỏi của bạn..."
+                                      rows="3"></textarea>
+                            <div class="comment-actions">
+                                <label class="btn-icon btn-upload-img" for="commentImgInput" title="Đính kèm ảnh"
+                                       aria-label="Đính kèm ảnh">
+                                    <i class="ti ti-photo"></i>
+                                    <span class="upload-badge" id="uploadBadge" style="display:none;"></span>
+                                </label>
+                                <input type="file" id="commentImgInput" accept="image/*" multiple style="display:none;"
+                                       onchange="onCommentImgChange(this)" />
+                                <button class="btn-send" onclick="submitComment()" aria-label="Gửi">
+                                    <i class="ti ti-send"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
-        </aside>
-    }
+                </aside>
+            }
 
-    <script src="~/dist/libs/tom-select/tom-select.complete.min.js"></script>
-    <script src="~/dist/libs/flatpickr/flatpickr.js"></script>
-    <script src="~/dist/libs/flatpickr/vn.js"></script>
-    <script>
-        var _hoTen = "@_hoTen";
-    </script>
-    <script src="~/dist/js/Common.js" asp-append-version="true"></script>
-    <script src="~/dist/js/AppLayout.js" asp-append-version="true"></script>
-    @RenderSection("Scripts", required: false)
-</body>
+            <script src="~/dist/libs/tom-select/tom-select.complete.min.js"></script>
+            <script src="~/dist/libs/flatpickr/flatpickr.js"></script>
+            <script src="~/dist/libs/flatpickr/vn.js"></script>
+            <script>
+                var _hoTen = "@_hoTen";
+            </script>
+            <script src="~/dist/js/Common.js" asp-append-version="true"></script>
+            <script src="~/dist/js/AppLayout.js" asp-append-version="true"></script>
+            @RenderSection("Scripts", required: false)
+        </body>
 
-</html>
+    </html>
