@@ -745,7 +745,7 @@ function handleSearch(input) {
     products.forEach(({ spName, groups }) => {
         if (spName) {
             const spLabel = document.createElement('div');
-            spLabel.style.cssText = 'padding:6px 12px 3px;font-size:.7rem;font-weight:600;color:var(--c-steel);text-transform:uppercase;letter-spacing:.07em;';
+            spLabel.style.cssText = 'padding:6px 12px 3px;font-size:1rem;font-weight:600;color:var(--c-steel);text-transform:uppercase;letter-spacing:.07em;';
             spLabel.textContent = spName;
             searchResults.appendChild(spLabel);
         }
