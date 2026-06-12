@@ -606,7 +606,6 @@ function initSearchFilter() {
     }
 
     const options = [
-        { value: 'all', label: 'Tất cả', iconHtml: '<i class="ti ti-files"></i>' },
         { value: 'video', label: 'Video', iconHtml: '<i class="ti ti-player-play"></i>' },
         { value: 'pdf', label: 'PDF', iconHtml: _ICON_PDF },
 
@@ -652,7 +651,6 @@ function closeFilterDropdown() {
 }
 
 var _FILTER_META = {
-    all: { label: 'Tất cả', iconHtml: '<i class="ti ti-files"></i>' },
     video: { label: 'Video', iconHtml: '<i class="ti ti-player-play"></i>' },
     pdf: { label: 'PDF', iconHtml: _ICON_PDF },
 
@@ -660,7 +658,7 @@ var _FILTER_META = {
 
 function setSearchFilter(value) {
     _searchFilter = value;
-    const meta = _FILTER_META[value] || _FILTER_META.all;
+    const meta = _FILTER_META[value] || _FILTER_META.video;
     const iconEl = document.getElementById('filterIcon');
     const labelEl = document.getElementById('filterLabel');
     if (iconEl) iconEl.innerHTML = meta.iconHtml; // innerHTML thay className
