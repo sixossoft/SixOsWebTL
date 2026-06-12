@@ -61,7 +61,7 @@
             @foreach (var sp in grouped)
             {
                 <div style="padding:10px 12px 4px; font-size:.7rem; font-weight:700; color:var(--c-primary); text-transform:uppercase; letter-spacing:.07em; opacity: .85;">
-                    <i class="ti ti-package" style="margin-right:2px;"></i> @sp.TenSanPham
+                    <i class="ti ti-package" style="margin-right:2px"></i> @sp.TenSanPham
                 </div>
 
                 foreach (var cnWrap in sp.ChucNangs)
@@ -75,7 +75,7 @@
                     <div class="doc-group" id="group-@cn.Id" data-group-name="@(cn.ChucNang?.ToLower() ?? "")" data-sp-name="@sp.TenSanPham">
                         <div class="group-header" onclick="toggleGroup('@cn.Id')">
                             <div class="group-left" style="pointer-events: none;">
-                                <i class="ti ti-chevron-right group-arrow" aria-hidden="true" style="font-size: 12px;"></i>
+                                <i class="ti ti-chevron-right group-arrow" aria-hidden="true" style="font-size: 14px;"></i>
                                 <span class="group-name">@cn.ChucNang</span>
                             </div>
                             <div class="group-right" style="pointer-events: none;">
@@ -94,7 +94,7 @@
                                 <div class="sub-group open" id="sub-group-video-@cn.Id">
                                     <div class="sub-group-header" onclick="toggleSubGroup('video-@cn.Id')">
                                         <div class="sub-group-left" style="pointer-events: none;">
-                                            <i class="ti ti-chevron-right sub-group-arrow" aria-hidden="true" style="font-size: 11px;"></i>
+                                            <i class="ti ti-chevron-right sub-group-arrow" aria-hidden="true" style="font-size: 14px;"></i>
                                             <span class="sub-group-name">Video hướng dẫn</span>
                                         </div>
                                         <div class="sub-group-right" style="pointer-events: none;">
@@ -116,7 +116,7 @@
                                                  onclick="openDoc(this)">
 
                                                 <div class="doc-info">
-                                                    <div class="doc-name">@v.TenVideo</div>
+                                                    <div class="doc-name" style="font-size:1.0rem; line-height:1.15;padding-left:12px;">@v.TenVideo</div>
                                                 </div>
                                             </div>
                                         }
