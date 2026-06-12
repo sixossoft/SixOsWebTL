@@ -41,206 +41,259 @@
     <div class="sidebar-search">
         <div class="search-box">
             <i class="ti ti-search" aria-hidden="true"></i>
-            <input class="search-input" type="text" id="searchInput" placeholder="Tìm kiếm tài liệu..." oninput="handleSearch(this)" autocomplete="off" />
-            <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Xóa tìm kiếm"><i class="ti ti-x"></i></button>
+            <input class="search-input" type="text" id="searchInput" placeholder="Tìm kiếm tài liệu..."
+                   oninput="handleSearch(this)" autocomplete="off" />
+            <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Xóa tìm kiếm"><i
+                class="ti ti-x"></i></button>
+            </div>
+            <div id="searchFilterWrap"></div>
         </div>
-        <div id="searchFilterWrap"></div>
-    </div>
 
-    <div style="padding: 14px 16px; border-bottom: 1px solid var(--c-border); background: #f8fafc; font-size: .75rem; color: var(--c-navy); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-        Danh mục tài liệu
-    </div>
+        <div
+            style="padding: 14px 16px; border-bottom: 1px solid var(--c-border); background: #f8fafc; font-size: .75rem; color: var(--c-navy); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
+            Danh mục tài liệu
+        </div>
 
-    <div class="sidebar-list" id="sidebarList">
+        <div class="sidebar-list" id="sidebarList">
 
-        @* Kết quả tìm kiếm (ẩn mặc định) *@
-        <div id="searchResults" style="display:none; padding: 4px 0;"></div>
+            @* Kết quả tìm kiếm (ẩn mặc định) *@
+            <div id="searchResults" style="display:none; padding: 4px 0;"></div>
 
-        @* Danh sách gốc *@
-        <div id="defaultList">
-            @foreach (var sp in grouped)
-            {
-                <div style="padding:10px 12px 4px; font-size:.7rem; font-weight:700; color:var(--c-primary); text-transform:uppercase; letter-spacing:.07em; opacity: .85;">
-                    <i class="ti ti-package" style="margin-right:2px;"></i> @sp.TenSanPham
-                </div>
+            @* Danh sách gốc *@
 
-                foreach (var cnWrap in sp.ChucNangs)
+            <div id="defaultList">
+
+                @foreach (var sp in grouped)
                 {
-                    var cn = cnWrap.ChucNang;
-                    var videos = cnWrap.Videos.ToList();
-                    var files = cnWrap.Files.ToList();
-                    var totalCount = videos.Count + files.Count;
-                    var isAdminForRender = isAdmin;
+                    var totalDocs = sp.ChucNangs.Sum(x => x.Videos.Count() + x.Files.Count());
 
-                    <div class="doc-group" id="group-@cn.Id" data-group-name="@(cn.ChucNang?.ToLower() ?? "")" data-sp-name="@sp.TenSanPham">
-                        <div class="group-header" onclick="toggleGroup('@cn.Id')">
-                            <div class="group-left" style="pointer-events: none;">
-                                <i class="ti ti-chevron-right group-arrow" aria-hidden="true" style="font-size: 12px;"></i>
-                                <span class="group-name">@cn.ChucNang</span>
+                    <div class="product-group">
+
+                        <!-- HEADER SẢN PHẨM -->
+                        <div class="product-header" onclick="toggleProduct('@sp.IDSanPham')">
+
+                            <div class="product-header-left">
+                                <i class="ti ti-package"></i>
+                                <span>@sp.TenSanPham</span>
                             </div>
-                            <div class="group-right" style="pointer-events: none;">
-                                <span class="group-count">@totalCount</span>
+
+                            <div class="product-header-right">
+                                <span class="product-badge">
+                                    @sp.ChucNangs.Count()
+                                </span>
+                                <span class="product-badge doc">
+                                    @totalDocs
+                                </span>
                             </div>
                         </div>
-                        <div class="group-items">
-                            @if (totalCount == 0 && isAdminForRender)
+
+                        <!-- CHỨC NĂNG -->
+                        <div class="product-body open" id="product-@sp.IDSanPham">
+
+                            @foreach (var cnWrap in sp.ChucNangs)
                             {
-                                <div class="doc-item-empty" style="padding: 12px 16px; color: var(--c-steel); font-size: 0.8rem; font-style: italic;">
-                                    <i class="ti ti-info-circle" style="margin-right: 4px;"></i> Chưa có tài liệu
-                                </div>
-                            }
-                            @if (videos.Any())
-                            {
-                                <div class="sub-group open" id="sub-group-video-@cn.Id">
-                                    <div class="sub-group-header" onclick="toggleSubGroup('video-@cn.Id')">
-                                        <div class="sub-group-left" style="pointer-events: none;">
-                                            <i class="ti ti-chevron-right sub-group-arrow" aria-hidden="true" style="font-size: 11px;"></i>
-                                            <span class="sub-group-name">Video hướng dẫn</span>
+                                var cn = cnWrap.ChucNang;
+                                var videos = cnWrap.Videos.ToList();
+                                var files = cnWrap.Files.ToList();
+                                var totalCount = videos.Count + files.Count;
+
+                                <div class="doc-group" id="group-@cn.Id" data-group-name="@(cn.ChucNang?.ToLower() ?? "")"
+                                     data-sp-name="@sp.TenSanPham">
+
+                                    <div class="group-header" onclick="toggleGroup('@cn.Id')">
+
+                                        <div class="group-left">
+                                            <i class="ti ti-settings"></i>
+
+                                            <span class="group-name">
+                                                @cn.ChucNang
+                                            </span>
                                         </div>
-                                        <div class="sub-group-right" style="pointer-events: none;">
-                                            <span class="sub-group-count">@videos.Count</span>
+
+                                        <div class="group-right">
+                                            <span class="group-count">
+                                                @totalCount
+                                            </span>
                                         </div>
                                     </div>
-                                    <div class="sub-group-items">
-                                        @foreach (var v in videos.OrderBy(x => x.STT))
-                                        {
-                                            <div class="doc-item"
-                                                 id="item-v-@v.Id"
-                                                 data-id="@v.Id"
-                                                 data-type="video"
-                                                 data-path="@v.DuongDanFileVideo"
-                                                 data-name="@v.TenVideo"
-                                                 data-group="@cn.ChucNang"
-                                                 data-cn-id="@cn.Id"
-                                                 data-keyword="@(v.Keyword?.ToLower() ?? "") @(v.TenVideo?.ToLower() ?? "")"
-                                                 onclick="openDoc(this)">
 
-                                                <div class="doc-info">
-                                                    <div class="doc-name">@v.TenVideo</div>
+                                    <div class="group-items">
+
+                                        @if (videos.Any())
+                                        {
+                                            <div class="sub-group open" id="sub-group-video-@cn.Id">
+
+                                                <div class="sub-group-header" onclick="toggleSubGroup('video-@cn.Id')">
+
+                                                    <div class="sub-group-left">
+                                                        <i class="ti ti-video"></i>
+                                                        <span>Video hướng dẫn</span>
+                                                    </div>
+
+                                                    <div class="sub-group-right">
+                                                        <span class="sub-group-count">
+                                                            @videos.Count
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="sub-group-items">
+
+                                                    @foreach (var v in videos.OrderBy(x => x.STT))
+                                                    {
+                                                        <div class="doc-item" id="item-v-@v.Id" data-id="@v.Id" data-type="video"
+                                                             data-path="@v.DuongDanFileVideo" data-name="@v.TenVideo"
+                                                             data-group="@cn.ChucNang" data-cn-id="@cn.Id" onclick="openDoc(this)">
+
+                                                          
+
+                                                            <div class="doc-info">
+                                                                <div class="doc-name">
+                                                                    @v.TenVideo
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+                                                    }
+
                                                 </div>
                                             </div>
                                         }
-                                    </div>
-                                </div>
-                            }
-                            @if (files.Any())
-                            {
-                                <div class="sub-group open" id="sub-group-file-@cn.Id">
-                                    <div class="sub-group-header" onclick="toggleSubGroup('file-@cn.Id')">
-                                        <div class="sub-group-left" style="pointer-events: none;">
-                                            <i class="ti ti-chevron-right sub-group-arrow" aria-hidden="true" style="font-size: 11px;"></i>
-                                            <span class="sub-group-name">Tài liệu</span>
-                                        </div>
-                                        <div class="sub-group-right" style="pointer-events: none;">
-                                            <span class="sub-group-count">@files.Count</span>
-                                        </div>
-                                    </div>
-                                    <div class="sub-group-items">
-                                        @foreach (var f in files.OrderBy(x => x.STT))
-                                        {
-                                            var isPdf = (f.TenFile?.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) ?? false)
-                                                      || (f.DuongDanFile?.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) ?? false);
-                                            <div class="doc-item"
-                                                 id="item-f-@f.Id"
-                                                 data-id="@f.Id"
-                                                 data-type="@(isPdf ? "pdf" : "word")"
-                                                 data-path="@f.DuongDanFile"
-                                                 data-name="@f.TenFile"
-                                                 data-group="@cn.ChucNang"
-                                                 data-cn-id="@cn.Id"
-                                                 data-keyword="@(f.Keyword?.ToLower() ?? "") @(f.TenFile?.ToLower() ?? "")"
-                                                 onclick="openDoc(this)">
 
-                                                <div class="doc-info">
-                                                    <div class="doc-name">@f.TenFile</div>
+                                        @if (files.Any())
+                                        {
+                                            <div class="sub-group open" id="sub-group-file-@cn.Id">
+
+                                                <div class="sub-group-header" onclick="toggleSubGroup('file-@cn.Id')">
+
+                                                    <div class="sub-group-left">
+                                                        <i class="ti ti-file-text"></i>
+                                                        <span>Tài liệu</span>
+                                                    </div>
+
+                                                    <div class="sub-group-right">
+                                                        <span class="sub-group-count">
+                                                            @files.Count
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="sub-group-items">
+
+                                                    @foreach (var f in files.OrderBy(x => x.STT))
+                                                    {
+                                                        var isPdf =
+                                                        (f.TenFile?.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) ?? false)
+                                                        || (f.DuongDanFile?.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) ?? false);
+
+                                                        <div class="doc-item" id="item-f-@f.Id" data-id="@f.Id"
+                                                             data-type="@(isPdf ? "pdf" : "word")" data-path="@f.DuongDanFile"
+                                                             data-name="@f.TenFile" data-group="@cn.ChucNang" data-cn-id="@cn.Id"
+                                                             onclick="openDoc(this)">
+
+                                                            <i class="@(isPdf ? "ti ti-file-type-pdf" : "ti ti-file-word")"></i>
+
+                                                            <div class="doc-info">
+                                                                <div class="doc-name">
+                                                                    @f.TenFile
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+                                                    }
+
                                                 </div>
                                             </div>
                                         }
+
                                     </div>
+
                                 </div>
                             }
+
                         </div>
+
                     </div>
-                    <div class="group-divider"></div>
                 }
-            }
-        </div>
 
-        <div class="search-empty" id="searchEmpty">
-            <i class="ti ti-search-off"></i>
-            Không tìm thấy tài liệu
-        </div>
-    </div>
-</aside>
-
-@* ── MAIN VIEWER ── *@
-<main class="viewer">
-    <div class="viewer-bar" id="viewerBar" style="display:none;">
-        <button class="btn-back-sidebar" onclick="backToSidebar()" aria-label="Quay lại">
-            <i class="ti ti-arrow-left"></i>
-        </button>
-        <div class="viewer-info" style="display:none;">
-            <div class="viewer-title">
-                <i class="ti ti-player-play" id="viewerIcon" aria-hidden="true"></i>
-                <span id="viewerTitle">—</span>
             </div>
-            <div class="viewer-meta">
-                <span id="viewerGroup"></span>
-                <span style="color:var(--c-border)">·</span>
-                <span class="viewer-badge badge-video" id="viewerBadge">Video</span>
+
+        
+            <div class="search-empty" id="searchEmpty">
+                <i class="ti ti-search-off"></i>
+                Không tìm thấy tài liệu
             </div>
         </div>
-        <div class="viewer-actions" style="display:none;">
-            <a class="btn-action" id="btnDownload" href="#" download target="_blank">
-                <i class="ti ti-download"></i> Tải về
-            </a>
-            <button class="btn-icon" onclick="toggleComment()" aria-label="Hỏi đáp" title="Hỏi đáp">
-                <i class="ti ti-message-circle"></i>
-                <span class="badge-dot" id="commentDot"></span>
+    </aside>
+
+    @* ── MAIN VIEWER ── *@
+    <main class="viewer">
+        <div class="viewer-bar" id="viewerBar" style="display:none;">
+            <button class="btn-back-sidebar" onclick="backToSidebar()" aria-label="Quay lại">
+                <i class="ti ti-arrow-left"></i>
             </button>
+            <div class="viewer-info" style="display:none;">
+                <div class="viewer-title">
+                    <i class="ti ti-player-play" id="viewerIcon" aria-hidden="true"></i>
+                    <span id="viewerTitle">—</span>
+                </div>
+                <div class="viewer-meta">
+                    <span id="viewerGroup"></span>
+                    <span style="color:var(--c-border)">·</span>
+                    <span class="viewer-badge badge-video" id="viewerBadge">Video</span>
+                </div>
+            </div>
+            <div class="viewer-actions" style="display:none;">
+                <a class="btn-action" id="btnDownload" href="#" download target="_blank">
+                    <i class="ti ti-download"></i> Tải về
+                </a>
+                <button class="btn-icon" onclick="toggleComment()" aria-label="Hỏi đáp" title="Hỏi đáp">
+                    <i class="ti ti-message-circle"></i>
+                    <span class="badge-dot" id="commentDot"></span>
+                </button>
+            </div>
         </div>
-    </div>
 
-    <div class="viewer-empty" id="viewerEmpty">
-        <div class="empty-box">
-            <i class="ti ti-books"></i>
-            <h3>Chọn tài liệu để bắt đầu</h3>
-            <p>Chọn một video, PDF từ danh sách bên trái để xem nội dung.</p>
+        <div class="viewer-empty" id="viewerEmpty">
+            <div class="empty-box">
+                <i class="ti ti-books"></i>
+                <h3>Chọn tài liệu để bắt đầu</h3>
+                <p>Chọn một video, PDF từ danh sách bên trái để xem nội dung.</p>
+            </div>
         </div>
-    </div>
-    <div class="viewer-body" id="viewerBody" style="display:none;"></div>
-</main>
+        <div class="viewer-body" id="viewerBody" style="display:none;"></div>
+    </main>
 
-@section Scripts {
-    <script src="~/dist/js/TaiLieu/TaiLieu.js" asp-append-version="true"></script>
-    <script>
-        function toggleGroup(id, isSearch = false) {
+    @section Scripts {
+        <script src="~/dist/js/TaiLieu/TaiLieu.js" asp-append-version="true"></script>
+        <script>
+            function toggleGroup(id, isSearch = false) {
             const selector = isSearch ? '#searchResults .doc-group' : '#defaultList .doc-group';
             const prefix = isSearch ? 'sr-group-container-' : 'group-';
             const grp = document.getElementById(prefix + id);
             if (!grp) return;
 
             document.querySelectorAll(selector).forEach(g => {
-                if (g !== grp) {
-                    g.classList.remove('open');
-                }
+            if (g !== grp) {
+            g.classList.remove('open');
+            }
             });
 
             grp.classList.toggle('open');
-        }
+            }
 
-        function toggleSubGroup(subId) {
+            function toggleSubGroup(subId) {
             const grp = document.getElementById('sub-group-' + subId);
             if (grp) {
-                grp.classList.toggle('open');
+            grp.classList.toggle('open');
             }
-        }
+            }
 
-        function collapseAllGroups() {
+            function collapseAllGroups() {
             document.querySelectorAll('#defaultList .doc-group, #searchResults .doc-group').forEach(g => g.classList.remove('open'));
-        }
+            }
 
-        document.addEventListener('DOMContentLoaded', collapseAllGroups);
-    </script>
-}
+            document.addEventListener('DOMContentLoaded', collapseAllGroups);
+        </script>
+    }
 

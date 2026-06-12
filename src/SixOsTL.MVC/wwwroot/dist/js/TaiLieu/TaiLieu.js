@@ -33,7 +33,7 @@ function toggleSidebar() {
     const isCollapsed = sidebar.style.width === '40px';
 
     if (isCollapsed) {
-        sidebar.style.width = '300px';
+        sidebar.style.width = '360px';
         sidebar.classList.remove('collapsed');
     } else {
         sidebar.style.width = '40px';
@@ -67,7 +67,6 @@ function openDoc(el) {
         grp.classList.add('open');
     }
     _currentVideoId = (type === 'video') ? itemId : null;
-    document.getElementById('navBreadcrumb').textContent = name;
     document.getElementById('viewerBar').style.display = '';
     document.getElementById('viewerEmpty').style.display = 'none';
     document.getElementById('viewerBody').style.display = '';
@@ -389,7 +388,7 @@ function _renderRelatedPanel() {
     if (!panel) return;
 
     panel.style.display = '';
-    const content = _relatedVideos.length > 0 
+    const content = _relatedVideos.length > 0
         ? `<div class="related-list" id="relatedList">
                ${_relatedVideos.map((v, i) => _buildRelatedItem(v, i)).join('')}
            </div>`
@@ -656,7 +655,7 @@ var _FILTER_META = {
     all: { label: 'Tất cả', iconHtml: '<i class="ti ti-files"></i>' },
     video: { label: 'Video', iconHtml: '<i class="ti ti-player-play"></i>' },
     pdf: { label: 'PDF', iconHtml: _ICON_PDF },
-        
+
 };
 
 function setSearchFilter(value) {
@@ -756,18 +755,21 @@ function handleSearch(input) {
         }
         const group = document.createElement('div');
         group.className = 'doc-group';
+        if (items.length > 0) {
+            group.classList.add('open');
+        }
         group.id = 'sr-group-container-' + cnId;
         group.innerHTML = `
-        <div class="group-header" onclick="toggleGroup(${cnId}, true)">
-            <div class="group-left">
-                <i class="ti ti-chevron-right group-arrow" style="font-size: 12px;"></i>
-                <span class="group-name">${cnName}</span>
-            </div>
-            <div class="group-right">
-                <span class="group-count">${items.length}</span>
-            </div>
-        </div>
-        <div class="group-items" id="sr-group-${cnId}"></div>`;
+         <div class="group-header" onclick="toggleGroup(${cnId}, true)">
+             <div class="group-left">
+                 <i class="ti ti-chevron-right group-arrow" style="font-size: 12px;"></i>
+                 <span class="group-name">${cnName}</span>
+             </div>
+             <div class="group-right">
+                 <span class="group-count">${items.length}</span>
+             </div>
+         </div>
+         <div class="group-items" id="sr-group-${cnId}"></div>`;
         searchResults.appendChild(group);
         const itemsContainer = group.querySelector(`#sr-group-${cnId}`);
 
@@ -957,17 +959,17 @@ window.submitComment = function () {
         method: 'POST',
         body: fd
     })
-    .then(function (r) {
-        if (!r.ok) throw new Error('err');
-        if (input) input.value = '';
-        _commentFiles = [];
-        _renderImgPreview();
-        loadComments(_currentDocId);
-    })
-    .catch(function () { })
-    .finally(function () {
-        if (btn) btn.disabled = false;
-    });
+        .then(function (r) {
+            if (!r.ok) throw new Error('err');
+            if (input) input.value = '';
+            _commentFiles = [];
+            _renderImgPreview();
+            loadComments(_currentDocId);
+        })
+        .catch(function () { })
+        .finally(function () {
+            if (btn) btn.disabled = false;
+        });
 };
 
 function _openLightbox(src) {

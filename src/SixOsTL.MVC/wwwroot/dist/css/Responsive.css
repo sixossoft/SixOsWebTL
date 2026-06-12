@@ -34,7 +34,7 @@
         overflow-x: auto;
         overflow-y: hidden;
         background: var(--c-white);
-        box-shadow: 0 -4px 16px rgba(0,21,41,.08);
+        box-shadow: 0 -4px 16px rgba(0, 21, 41, .08);
     }
 
     .admin-nav-section {
@@ -64,25 +64,22 @@
         position: relative;
     }
 
-        .admin-nav-item i {
-            font-size: 18px !important;
-        }
-
-        .admin-nav-item.active {
-            border-bottom-color: var(--c-cyan);
-            background: transparent !important;
-            color: var(--c-cyan) !important;
-        }
-
-        .admin-nav-item .badge-count {
-            position: absolute;
-            top: 4px;
-            right: calc(50% - 20px);
-        }
-
-    .app-body {
-/*        padding-bottom: 60px;*/
+    .admin-nav-item i {
+        font-size: 18px !important;
     }
+
+    .admin-nav-item.active {
+        border-bottom-color: var(--c-cyan);
+        background: transparent !important;
+        color: var(--c-cyan) !important;
+    }
+
+    .admin-nav-item .badge-count {
+        position: absolute;
+        top: 4px;
+        right: calc(50% - 20px);
+    }
+
 
     /* ══ DASHBOARD ══════════════════════════════════════════ */
     .dash-stats {
@@ -94,9 +91,9 @@
         grid-template-columns: repeat(2, 1fr) !important;
     }
 
-        .dash-quick a > div:last-child > div:last-child {
-            display: none;
-        }
+    .dash-quick a>div:last-child>div:last-child {
+        display: none;
+    }
 
     .dash-recent {
         grid-template-columns: 1fr !important;
@@ -123,37 +120,37 @@
         -webkit-overflow-scrolling: touch;
     }
 
-        .admin-table th:first-child,
-        .admin-table td:first-child {
-            position: sticky;
-            left: 0;
-            background: var(--c-ice); 
-            z-index: 1;
-        }
+    .admin-table th:first-child,
+    .admin-table td:first-child {
+        position: sticky;
+        left: 0;
+        background: var(--c-ice);
+        z-index: 1;
+    }
 
-        .admin-table td:first-child {
-            background: var(--c-white);
-        }
+    .admin-table td:first-child {
+        background: var(--c-white);
+    }
 
-        .admin-table tr:hover td:first-child {
-            background: #FAFCFF;
-        }
+    .admin-table tr:hover td:first-child {
+        background: #FAFCFF;
+    }
 
-        .admin-table th:last-child,
-        .admin-table td:last-child {
-            position: sticky;
-            right: 0;
-            background: var(--c-ice);
-            z-index: 1;
-        }
+    .admin-table th:last-child,
+    .admin-table td:last-child {
+        position: sticky;
+        right: 0;
+        background: var(--c-ice);
+        z-index: 1;
+    }
 
-        .admin-table td:last-child {
-            background: var(--c-white);
-        }
+    .admin-table td:last-child {
+        background: var(--c-white);
+    }
 
-        .admin-table tr:hover td:last-child {
-            background: #FAFCFF;
-        }
+    .admin-table tr:hover td:last-child {
+        background: #FAFCFF;
+    }
 
     .card-head {
         flex-wrap: wrap;
@@ -194,10 +191,10 @@
         padding: 24px;
     }
 
-        .modal-overlay.alert-overlay .modal {
-            border-radius: var(--radius);
-            max-width: 360px !important;
-        }
+    .modal-overlay.alert-overlay .modal {
+        border-radius: var(--radius);
+        max-width: 360px !important;
+    }
 }
 
 /* ══ EXTRA SMALL < 400px ══════════════════════════════════ */
@@ -207,9 +204,9 @@
         padding: 14px 4px !important;
     }
 
-        .admin-nav-item i {
-            font-size: 20px !important;
-        }
+    .admin-nav-item i {
+        font-size: 20px !important;
+    }
 
     .dash-stats [style*="1.75rem"] {
         font-size: 1.4rem;

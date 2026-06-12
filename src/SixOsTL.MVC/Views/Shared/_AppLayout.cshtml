@@ -9,6 +9,7 @@
 }
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -24,6 +25,7 @@
     <link href="~/dist/css/flatpickr/flatpickr.min.css" rel="stylesheet">
     @RenderSection("Styles", required: false)
 </head>
+
 <body>
     <div id="toast-container"></div>
     @await Html.PartialAsync("_Modals")
@@ -43,9 +45,10 @@
         </a>
         <div class="nav-sep"></div>
         <div class="nav-breadcrumb">
-            <i class="ti ti-home" style="font-size:13px" aria-hidden="true"></i>
-            <i class="ti ti-chevron-right" style="font-size:11px" aria-hidden="true"></i>
-            <span class="cur" id="navBreadcrumb">@(ViewData["Title"] ?? "Trang chủ")</span>
+            <a class="cur" id="navBreadcrumb"
+               style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Công ty Vũ Phong &nbsp;&nbsp;
+                0901 878 896 &nbsp;&nbsp; sixossoft@gmail.com &nbsp;&nbsp; 78/14 Nguyễn Thị Tú - P. Bình Hưng H
+            </a>
         </div>
         <div class="nav-right">
             @if (_isAdmin)
@@ -149,14 +152,16 @@
             <div class="comment-foot">
                 <div class="comment-img-preview" id="commentImgPreview"></div>
                 <div class="comment-input-wrap">
-                    <textarea class="comment-input" id="commentInput"
-                          placeholder="Nhập câu hỏi của bạn..." rows="3"></textarea>
+                    <textarea class="comment-input" id="commentInput" placeholder="Nhập câu hỏi của bạn..."
+                              rows="3"></textarea>
                     <div class="comment-actions">
-                        <label class="btn-icon btn-upload-img" for="commentImgInput" title="Đính kèm ảnh" aria-label="Đính kèm ảnh">
+                        <label class="btn-icon btn-upload-img" for="commentImgInput" title="Đính kèm ảnh"
+                               aria-label="Đính kèm ảnh">
                             <i class="ti ti-photo"></i>
                             <span class="upload-badge" id="uploadBadge" style="display:none;"></span>
                         </label>
-                        <input type="file" id="commentImgInput" accept="image/*" multiple style="display:none;" onchange="onCommentImgChange(this)" />
+                        <input type="file" id="commentImgInput" accept="image/*" multiple style="display:none;"
+                               onchange="onCommentImgChange(this)" />
                         <button class="btn-send" onclick="submitComment()" aria-label="Gửi">
                             <i class="ti ti-send"></i>
                         </button>
@@ -177,4 +182,5 @@
     <script src="~/dist/js/AppLayout.js" asp-append-version="true"></script>
     @RenderSection("Scripts", required: false)
 </body>
+
 </html>
