@@ -716,11 +716,7 @@ function handleSearch(input) {
     }
 
     searchEmpty.style.display = 'none';
-    const label = hasQuery ? `${matched.length} kết quả cho "<strong>${q}</strong>"` : `${matched.length} ${_FILTER_META[_searchFilter]?.label ?? ''}`;
-    searchResults.innerHTML = `
-        <div style="padding:4px 12px 6px;font-size:.72rem;color:var(--c-steel);">
-            ${label}
-        </div>`;
+    searchResults.innerHTML = '';
 
     const products = new Map();
     const allGroups = document.querySelectorAll('#defaultList .doc-group');
@@ -806,6 +802,9 @@ function clearSearch() {
     const input = document.getElementById('searchInput');
     input.value = '';
     handleSearch(input);
+    if (typeof collapseAllGroups === 'function') {
+        collapseAllGroups();
+    }
     input.focus();
 }
 
