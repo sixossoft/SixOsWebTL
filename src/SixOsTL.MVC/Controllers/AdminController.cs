@@ -30,8 +30,8 @@ namespace SixOsTL.MVC.Controllers
 
         private async Task LoadChucNangDropdown(CancellationToken ct) =>
             ViewBag.ChucNangs = await _db.ChucNangs
-                .OrderBy(c => c.IDSanPham).ThenBy(c => c.ChucNang)
-                .Select(c => new ChucNangDto(c.Id, c.IDSanPham, c.SanPham.TenSP, c.ChucNang, null, null))
+                .OrderBy(c => c.IDSanPham).ThenBy(c => c.Stt).ThenBy(c => c.ChucNang)
+                .Select(c => new ChucNangDto(c.Id, c.IDSanPham, c.SanPham.TenSP, c.ChucNang, null, null, c.Stt))
                 .ToListAsync(ct);
 
         #region DASHBOARD
@@ -88,8 +88,8 @@ namespace SixOsTL.MVC.Controllers
             ViewBag.PendingCount = await PendingCount(ct);
 
             var chucNangs = await _db.ChucNangs
-                .OrderBy(c => c.IDSanPham).ThenBy(c => c.ChucNang)
-                .Select(c => new ChucNangDto(c.Id, c.IDSanPham, c.SanPham.TenSP, c.ChucNang, null, null))
+                .OrderBy(c => c.IDSanPham).ThenBy(c => c.Stt).ThenBy(c => c.ChucNang)
+                .Select(c => new ChucNangDto(c.Id, c.IDSanPham, c.SanPham.TenSP, c.ChucNang, null, null, c.Stt))
                 .ToListAsync(ct);
 
             var cnIds = chucNangs.Select(c => c.Id).ToList();
@@ -226,8 +226,8 @@ namespace SixOsTL.MVC.Controllers
             ViewBag.PendingCount = await PendingCount(ct);
 
             var chucNangs = await _db.ChucNangs
-                .OrderBy(c => c.IDSanPham).ThenBy(c => c.ChucNang)
-                .Select(c => new ChucNangDto(c.Id, c.IDSanPham, c.SanPham.TenSP, c.ChucNang, null, null))
+                .OrderBy(c => c.IDSanPham).ThenBy(c => c.Stt).ThenBy(c => c.ChucNang)
+                .Select(c => new ChucNangDto(c.Id, c.IDSanPham, c.SanPham.TenSP, c.ChucNang, null, null, c.Stt))
                 .ToListAsync(ct);
 
             var cnIds = chucNangs.Select(c => c.Id).ToList();
@@ -285,9 +285,11 @@ namespace SixOsTL.MVC.Controllers
             ViewBag.PendingCount = await PendingCount(ct);
 
             var cns = await _db.ChucNangs
+                .OrderBy(c => c.IDSanPham).ThenBy(c => c.Stt).ThenBy(c => c.ChucNang)
                 .Select(c => new ChucNangDto(c.Id, c.IDSanPham, c.SanPham.TenSP,
                     c.ChucNang, c.DuongDanFile,
-                    c.MucDoUuTien != null ? c.MucDoUuTien.MucDo : null))
+                    c.MucDoUuTien != null ? c.MucDoUuTien.MucDo : null,
+                    c.Stt))
                 .ToListAsync(ct);
 
             ViewBag.SanPhams = await _db.SanPhams

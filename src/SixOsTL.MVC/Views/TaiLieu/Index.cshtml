@@ -15,7 +15,7 @@
         {
             sp.Key.IDSanPham,
             sp.Key.TenSanPham,
-            ChucNangs = sp.OrderBy(x => x.ChucNang)
+            ChucNangs = sp.OrderBy(x => x.Stt).ThenBy(x => x.ChucNang)
                 .Select(cn => new
                 {
                     ChucNang = cn,

@@ -41,10 +41,12 @@ public class TaiLieuController : Controller
 
         var chucNangs = await query
             .OrderBy(c => c.IDSanPham)
+            .ThenBy(c => c.Stt)
             .Select(c => new ChucNangDto(
                 c.Id, c.IDSanPham, c.SanPham.TenSP,
                 c.ChucNang, c.DuongDanFile,
-                c.MucDoUuTien != null ? c.MucDoUuTien.MucDo : null))
+                c.MucDoUuTien != null ? c.MucDoUuTien.MucDo : null,
+                c.Stt))
             .ToListAsync(ct);
         var cnIds = chucNangs.Select(c => c.Id).ToList();
 

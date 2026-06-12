@@ -8,7 +8,7 @@
         public string? ChucNang { get; set; }
         public string? DuongDanFile { get; set; }
         public bool Active { get; set; }
-
+        public int Stt { get; set; }
         public DmSanPham SanPham { get; set; } = default!;
         public DmMucDoUuTien? MucDoUuTien { get; set; }
         public ICollection<TaiLieuVideo> Videos { get; set; } = new List<TaiLieuVideo>();

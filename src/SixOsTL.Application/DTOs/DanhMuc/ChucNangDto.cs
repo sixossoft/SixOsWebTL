@@ -6,6 +6,7 @@
         string? TenSanPham,
         string? ChucNang,
         string? DuongDanFile,
-        string? MucDo
+        string? MucDo,
+        int Stt
     );
 }
