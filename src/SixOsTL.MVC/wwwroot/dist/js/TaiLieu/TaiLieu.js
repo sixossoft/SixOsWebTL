@@ -683,33 +683,38 @@ function handleSearch(input) {
     const searchEmpty = document.getElementById('searchEmpty');
     const hasQuery = q.length > 0;
     const hasFilter = _searchFilter !== 'all';
-    if (!hasQuery && !hasFilter) {
-        defaultList.style.display = '';
-        searchResults.style.display = 'none';
-        searchEmpty.style.display = 'none';
-        return;
-    }
-    defaultList.style.display = 'none';
-    searchResults.style.display = '';
-    const allItems = document.querySelectorAll('#defaultList .doc-item');
-    const matched = Array.from(allItems).filter(el => {
+
+    function matchesItem(el) {
         if (hasFilter) {
             const t = el.dataset.type || '';
             if (_searchFilter === 'video' && t !== 'video') return false;
             if (_searchFilter === 'pdf' && t !== 'pdf') return false;
-
         }
         if (hasQuery) {
             const kw = (el.dataset.keyword || '') + ' ' + (el.dataset.name || '').toLowerCase() + ' ' + (el.dataset.group || '').toLowerCase();
             if (!kw.includes(q)) return false;
         }
         return true;
-    });
+    }
+
+    if (!hasQuery && !hasFilter) {
+        defaultList.style.display = '';
+        searchResults.style.display = 'none';
+        searchEmpty.style.display = 'none';
+        return;
+    }
+
+    defaultList.style.display = 'none';
+    searchResults.style.display = '';
+
+    const allItems = Array.from(document.querySelectorAll('#defaultList .doc-item'));
+    const matched = allItems.filter(matchesItem);
     if (matched.length === 0) {
         searchResults.innerHTML = '';
         searchEmpty.style.display = 'block';
         return;
     }
+
     searchEmpty.style.display = 'none';
     const label = hasQuery ? `${matched.length} kết quả cho "<strong>${q}</strong>"` : `${matched.length} ${_FILTER_META[_searchFilter]?.label ?? ''}`;
     searchResults.innerHTML = `
@@ -717,79 +722,80 @@ function handleSearch(input) {
             ${label}
         </div>`;
 
-    // ── Group theo ChucNang rồi render header ──────────────────
-    const groups = new Map(); // cnId → { spName, cnName, cnId, items[] }
-
-    // Đảm bảo tất cả các group đều xuất hiện trong kết quả (theo yêu cầu "load hết")
+    const products = new Map();
     const allGroups = document.querySelectorAll('#defaultList .doc-group');
+
     allGroups.forEach(docGroup => {
         const cnId = docGroup.id.replace('group-', '');
         const cnName = docGroup.querySelector('.group-name').textContent;
+        const spId = docGroup.dataset.spId || '';
         const spName = docGroup.dataset.spName || '';
+        const productKey = `${spId}__${spName}`;
+        const groupItems = allItems.filter(el => el.dataset.cnId === cnId && matchesItem(el));
 
-        // Lọc các item thuộc group này mà khớp với query/filter
-        const groupItems = Array.from(allItems).filter(el => {
-            if (el.dataset.cnId !== cnId) return false;
+        if (!products.has(productKey)) {
+            products.set(productKey, {
+                spId,
+                spName,
+                groups: []
+            });
+        }
 
-            if (hasFilter) {
-                const t = el.dataset.type || '';
-                if (_searchFilter === 'video' && t !== 'video') return false;
-                if (_searchFilter === 'pdf' && t !== 'pdf') return false;
-            }
-            if (hasQuery) {
-                const kw = (el.dataset.keyword || '') + ' ' + (el.dataset.name || '').toLowerCase() + ' ' + (el.dataset.group || '').toLowerCase();
-                if (!kw.includes(q)) return false;
-            }
-            return true;
+        products.get(productKey).groups.push({
+            cnId,
+            cnName,
+            items: groupItems
         });
-
-        groups.set(cnId, { spName, cnName, cnId, items: groupItems });
     });
 
-    groups.forEach(({ spName, cnName, cnId, items }) => {
+    products.forEach(({ spName, groups }) => {
         if (spName) {
             const spLabel = document.createElement('div');
             spLabel.style.cssText = 'padding:6px 12px 3px;font-size:.7rem;font-weight:600;color:var(--c-steel);text-transform:uppercase;letter-spacing:.07em;';
             spLabel.textContent = spName;
             searchResults.appendChild(spLabel);
         }
-        const group = document.createElement('div');
-        group.className = 'doc-group';
-        if (items.length > 0) {
-            group.classList.add('open');
-        }
-        group.id = 'sr-group-container-' + cnId;
-        group.innerHTML = `
-         <div class="group-header" onclick="toggleGroup(${cnId}, true)">
-             <div class="group-left">
-                 <i class="ti ti-chevron-right group-arrow" style="font-size: 12px;"></i>
-                 <span class="group-name">${cnName}</span>
-             </div>
-             <div class="group-right">
-                 <span class="group-count">${items.length}</span>
-             </div>
-         </div>
-         <div class="group-items" id="sr-group-${cnId}"></div>`;
-        searchResults.appendChild(group);
-        const itemsContainer = group.querySelector(`#sr-group-${cnId}`);
 
-        if (items.length === 0) {
-            itemsContainer.innerHTML = `<div class="doc-item-empty" style="padding: 10px 16px; color: var(--c-steel); font-size: 0.75rem; font-style: italic;">Chưa có tài liệu phù hợp</div>`;
-        } else {
-            items.forEach(el => {
-                const clone = el.cloneNode(true);
-                clone.classList.remove('active');
-                if (_activeItem === el) clone.classList.add('active');
-                clone.removeAttribute('onclick');
-                clone.addEventListener('click', () => {
-                    document.querySelectorAll('#searchResults .doc-item').forEach(c => c.classList.remove('active'));
-                    clone.classList.add('active');
-                    _activeItem = el;
-                    openDoc(el);
+        groups.forEach(({ cnName, cnId, items }) => {
+            const group = document.createElement('div');
+            group.className = 'doc-group';
+            if (items.length > 0) {
+                group.classList.add('open');
+            }
+            group.id = 'sr-group-container-' + cnId;
+            group.innerHTML = `
+             <div class="group-header" onclick="toggleGroup(${cnId}, true)">
+                 <div class="group-left">
+                     <i class="ti ti-chevron-right group-arrow" style="font-size: 12px;"></i>
+                     <span class="group-name">${cnName}</span>
+                 </div>
+                 <div class="group-right">
+                     <span class="group-count">${items.length}</span>
+                 </div>
+             </div>
+             <div class="group-items" id="sr-group-${cnId}"></div>`;
+            searchResults.appendChild(group);
+            const itemsContainer = group.querySelector(`#sr-group-${cnId}`);
+
+            if (items.length === 0) {
+                itemsContainer.innerHTML = `<div class="doc-item-empty" style="padding: 10px 16px; color: var(--c-steel); font-size: 0.75rem; font-style: italic;">Chưa có tài liệu phù hợp</div>`;
+            } else {
+                items.forEach(el => {
+                    const clone = el.cloneNode(true);
+                    clone.classList.remove('active');
+                    if (_activeItem === el) clone.classList.add('active');
+                    clone.removeAttribute('onclick');
+                    clone.addEventListener('click', () => {
+                        document.querySelectorAll('#searchResults .doc-item').forEach(c => c.classList.remove('active'));
+                        clone.classList.add('active');
+                        _activeItem = el;
+                        openDoc(el);
+                    });
+                    itemsContainer.appendChild(clone);
                 });
-                itemsContainer.appendChild(clone);
-            });
-        }
+            }
+        });
+
         const divider = document.createElement('div');
         divider.className = 'group-divider';
         searchResults.appendChild(divider);
