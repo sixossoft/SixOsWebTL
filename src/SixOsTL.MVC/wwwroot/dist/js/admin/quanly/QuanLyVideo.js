@@ -326,3 +326,28 @@ function _lqThem(idVideoLienQuan, tenVideo, btn) {
             showToast('Lỗi kết nối.', 500);
         });
 }
+
+function xoaCacheVideo(remotePath, tenVideo, token) {
+    const msg = remotePath
+        ? 'Xóa cache video <strong>' + (tenVideo || remotePath) + '</strong>?' : 'Xóa <strong>toàn bộ cache video</strong> trên server?';
+
+    showModalDanger(msg, () => {
+        const body = new URLSearchParams();
+        if (remotePath) body.append('remotePath', remotePath);
+        body.append('__RequestVerificationToken', token);
+
+        fetch('/Admin/XoaCacheVideo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: body.toString()
+        })
+            .then(r => {
+                if (r.ok) {
+                    showToast(remotePath ? 'Đã xóa cache video!' : 'Đã xóa toàn bộ cache!', 200);
+                } else {
+                    showToast('Xóa cache thất bại.', 500);
+                }
+            })
+            .catch(() => showToast('Lỗi kết nối.', 500));
+    });
+}

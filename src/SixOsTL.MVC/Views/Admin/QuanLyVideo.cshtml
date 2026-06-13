@@ -105,6 +105,11 @@
                 <div class="card-title"><i class="ti ti-list"></i> Danh sách Video</div>
                 <div style="display:flex; gap: 8px; align-items: center;">
                     <div class="search-bar">
+                        <button class="btn-cancel btn-sm"
+                                title="Xóa toàn bộ cache video trên server"
+                                onclick="xoaCacheVideo(null, null, document.getElementById('adminCsrfToken').value)">
+                            <i class="ti ti-refresh"></i> Xóa toàn bộ cache
+                        </button>
                         <div class="search-bar-wrap">
                             <i class="ti ti-search"></i>
                             <input type="text" placeholder="Tìm video..." oninput="filterTable(this,'videoTable')" />
@@ -174,6 +179,12 @@
                                                                 title="Quản lý video liên quan"
                                                                 onclick="openLienQuanModal(@v.Id, '@Html.Raw(v.TenVideo?.Replace("'", "\'"))', '@_token')">
                                                             <i class="ti ti-link"></i>
+                                                        </button>
+                                                        <button class="btn-primary btn-sm"
+                                                                title="Xóa cache video"
+                                                                style="background:var(--c-warn, #f59e0b);"
+                                                                onclick="xoaCacheVideo('@v.DuongDanFileVideo', '@Html.Raw(v.TenVideo?.Replace("'", "\\'"))', '@_token')">
+                                                            <i class="ti ti-refresh"></i>
                                                         </button>
                                                         <button class="btn-primary btn-sm btn-danger"
                                                                 onclick="xoaVideo(@v.Id, @v.IDChucNang, '@v.DuongDanFileVideo', '@Html.Raw(v.TenVideo?.Replace("'", "\'"))', '@_token')">

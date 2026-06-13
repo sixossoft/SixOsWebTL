@@ -216,6 +216,28 @@ namespace SixOsTL.MVC.Controllers
             await _taiLieu.DeleteVideoLienQuanAsync(id, ct);
             return Ok();
         }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public IActionResult XoaCacheVideo(string? remotePath, CancellationToken ct)
+        {
+            if (GuardAdmin() is { } r) return r;
+            var cacheDir = Path.Combine(Path.GetTempPath(), "sixos_video_cache");
+            if (string.IsNullOrWhiteSpace(remotePath))
+            {
+                if (Directory.Exists(cacheDir))
+                {
+                    foreach (var f in Directory.GetFiles(cacheDir)) System.IO.File.Delete(f);
+                }
+                return Ok(new { message = "Đã xóa toàn bộ cache video." });
+            }
+            var cacheKey = Convert.ToHexString(System.Security.Cryptography.MD5.HashData(System.Text.Encoding.UTF8.GetBytes(remotePath)));
+            var ext = Path.GetExtension(remotePath).ToLowerInvariant();
+            var cachePath = Path.Combine(cacheDir, cacheKey + ext);
+            if (System.IO.File.Exists(cachePath)) System.IO.File.Delete(cachePath);
+            var tempPath = cachePath + ".tmp";
+            if (System.IO.File.Exists(tempPath)) System.IO.File.Delete(tempPath);
+            return Ok(new { message = "Đã xóa cache video." });
+        }
         #endregion
 
         #region QUẢN LÝ FILE
